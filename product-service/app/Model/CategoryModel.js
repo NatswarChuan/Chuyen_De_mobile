@@ -26,7 +26,7 @@ function getCategories(req, res) {
             else {
                 let i = 0;
                 results.map(item=>{
-                    axios.get(`http://192.168.1.2:3000/api/image/` + item.category_image + `/` + req.params.key)
+                    axios.get(`http://192.168.1.2:3002/api/image/` + item.category_image + `/` + req.params.key)
                     .then(res => {
                         const { data } = res.data;
                         item.category_image = data;

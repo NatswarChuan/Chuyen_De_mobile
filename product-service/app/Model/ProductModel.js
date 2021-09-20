@@ -31,7 +31,7 @@ function getProduct(req, res) {
                 let i = 0;
 
                 //gọi API image lấy đường dẫn Avatar
-                axios.get(`http://192.168.1.2:3000/api/image/` + results[0].product_avatar + `/` + req.params.key)
+                axios.get(`http://192.168.1.2:3002/api/image/` + results[0].product_avatar + `/` + req.params.key)
                     .then(res => {
                         const { data } = res.data;
                         results[0].product_avatar = data;
@@ -40,7 +40,7 @@ function getProduct(req, res) {
 
                 //gọi API image lấy đường dẫn các hình ảnh sản phẩm
                 arrImages.map(item => {
-                    axios.get(`http://192.168.1.2:3000/api/image/` + item + `/` + req.params.key)
+                    axios.get(`http://192.168.1.2:3002/api/image/` + item + `/` + req.params.key)
                         .then(res => {
                             const { data } = res.data;
                             results[0].product_image.push(data);

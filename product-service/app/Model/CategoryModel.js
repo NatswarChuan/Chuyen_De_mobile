@@ -16,12 +16,12 @@ function getCategories(req, res) {
                 sql = 'SELECT * FROM `category`';
                 break;
             default:
-                return res.send({ error: true, message: 'key không hợp lệ' });
+                return res.send({ status: "fail", message: 'key không hợp lệ' });
         }
         dbConn.query(sql, id, function (error, results, fields) {
             if (error) throw error;
             if (results == null || results.length === 0) {
-                return res.send({ error: true, message: 'không có sản phẩm có id=' + id });
+                return res.send({ status: "fail", message: 'không có sản phẩm có id=' + id });
             }
             else {
                 let i = 0;
@@ -34,7 +34,7 @@ function getCategories(req, res) {
                     .catch(error => console.log(error)).finally(() => {
                         i++;
                         if (i === results.length){
-                            return res.send({ error: false, data: results, message: 'sản phẩm có id=' + id });
+                            return res.send({ status: "success", data: results, message: 'sản phẩm có id=' + id });
                         }
                     });
                 });
@@ -43,7 +43,7 @@ function getCategories(req, res) {
 
     }
     else {
-        return res.send({ error: true, message: 'key không hợp lệ' });
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
     }
 }
 
@@ -61,12 +61,12 @@ function getCategory(req, res) {
                 sql = 'SELECT `category_product`.`product_id` FROM `category` JOIN `category_product` ON `category_product`.`category_id` = `category`.`category_id` WHERE `category`.`category_id` = 1';
                 break;
             default:
-                return res.send({ error: true, message: 'key không hợp lệ' });
+                return res.send({ status: "fail", message: 'key không hợp lệ' });
         }
         db.dbConn.query(sql, id, function (error, results, fields) {
             if (error) throw error;
             if (results == null || results.length === 0) {
-                return res.send({ error: true, message: 'không có sản phẩm có id=' + id });
+                return res.send({ status: "fail", message: 'không có sản phẩm có id=' + id });
             }
             else {
                 db.getProducts(results,option,req,res);
@@ -75,7 +75,7 @@ function getCategory(req, res) {
 
     }
     else {
-        return res.send({ error: true, message: 'key không hợp lệ' });
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
     }
 }
 

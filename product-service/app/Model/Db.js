@@ -23,7 +23,7 @@ function getProducts(results,option,req,res) {
             .finally(() => {
                 i++;
                 if (i === results.length) {
-                    return res.send({ error: false, data: result, message: 'tất cả thông tin sản phẩm' });
+                    return res.send({ status: "success", data: result, message: 'tất cả thông tin sản phẩm' });
                 }
             });
     });

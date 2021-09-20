@@ -17,13 +17,13 @@ function getProduct(req, res) {
                 sql = 'SELECT * FROM `product` WHERE `product_id`= ?';
                 break;
             default:
-                return res.send({ error: true, message: 'key không hợp lệ' });
+                return res.send({ status: "fail", message: 'key không hợp lệ' });
         }
 
         db.dbConn.query(sql, id, function (error, results, fields) {
             if (error) throw error;
             if (results == null || results.length === 0) {
-                return res.send({ error: true, message: 'không có sản phẩm có id=' + id });
+                return res.send({ status: "fail", message: 'không có sản phẩm có id=' + id });
             }
             else {
                 let arrImages = results[0].product_image.split(",");
@@ -49,7 +49,7 @@ function getProduct(req, res) {
                         .finally(() => {
                             i++;
                             if (i === arrImages.length) {
-                                return res.send({ error: false, data: results, message: 'sản phẩm có id=' + id });
+                                return res.send({ status: "success", data: results, message: 'sản phẩm có id=' + id });
                             }
                         });
                 });
@@ -57,7 +57,7 @@ function getProduct(req, res) {
         });
     }
     else {
-        return res.send({ error: true, message: 'key không hợp lệ' });
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
     }
 }
 
@@ -75,14 +75,14 @@ function getProducts(req, res) {
                 sql = 'SELECT product_id FROM product';
                 break;
             default:
-                return res.send({ error: true, message: 'key không hợp lệ' });
+                return res.send({ status: "fail", message: 'key không hợp lệ' });
         }
 
 
         db.dbConn.query(sql, function (error, results, fields) {
             if (error) throw error;
             if (results == null || results.length === 0) {
-                return res.send({ error: true, message: 'không có sản phẩm trong cơ sở dữ liệu' });
+                return res.send({ status: "fail", message: 'không có sản phẩm trong cơ sở dữ liệu' });
             }
             else {
                 db.getProducts(results,option,req,res);
@@ -90,7 +90,7 @@ function getProducts(req, res) {
         });
     }
     else {
-        return res.send({ error: true, message: 'key không hợp lệ' });
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
     }
 }
 

@@ -7,6 +7,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: true
 }));
+app.set('port', process.env.PORT || 3002);
 app.get('/', function (req, res) {
     return res.send({ error: true, message: 'hello' })
 });
@@ -19,6 +20,6 @@ app.get('/api/image/:image_id/:key',
 );
 
 app.listen(3002, function () {
-    console.log('Node app is running on port 3000');
+    console.log('Node app is running on port 3002');
 });
 module.exports = app;

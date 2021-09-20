@@ -1,4 +1,5 @@
 var productModel = require('./app/Model/ProductModel');
+var categoryModel = require('./app/Model/CategoryModel');
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
@@ -14,16 +15,30 @@ app.get('/', function (req, res) {
 });
 
 //Trả về đường 1 sản phẩm
-app.get('/api/product/:product_id/:key',
+app.get('/api/product/:product_id/:option/:key',
     function (req, res) {
         productModel.getProduct(req, res);
     }
 );
 
 //Trả về tất cả sản phẩm
-app.get('/api/products/:key',
+app.get('/api/products/:option/:key',
     function (req, res) {
         productModel.getProducts(req, res);
+    }
+);
+
+//Trả về tất cả danh mục
+app.get('/api/categories/:option/:key',
+    function (req, res) {
+        categoryModel.getCategories(req, res);
+    }
+);
+
+//Trả về tất cả sản phẩm thuộc danh mục
+app.get('/api/category/:category_id/:option/:key',
+    function (req, res) {
+        categoryModel.getCategory(req, res);
     }
 );
 

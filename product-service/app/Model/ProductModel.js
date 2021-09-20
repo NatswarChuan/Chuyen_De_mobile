@@ -1,13 +1,26 @@
 var config = require('../config/config');
-var dbConn = require('./Db');
+var db = require('./Db');
 const axios = require('axios');
 
 //lấy 1 sản phẩm theo id
 function getProduct(req, res) {
     let id = req.params.product_id;
     let key = req.params.key;
+    let option = req.params.option;
     if (key == config.key) {
-        dbConn.query('SELECT * FROM `product` WHERE `product_id`= ? AND `status` = 1', id, function (error, results, fields) {
+        let sql = '';
+        switch (option) {
+            case '0':
+                sql = 'SELECT * FROM `product` WHERE `product_id`= ? AND status = 1';
+                break;
+            case '1':
+                sql = 'SELECT * FROM `product` WHERE `product_id`= ?';
+                break;
+            default:
+                return res.send({ error: true, message: 'key không hợp lệ' });
+        }
+
+        db.dbConn.query(sql, id, function (error, results, fields) {
             if (error) throw error;
             if (results == null || results.length === 0) {
                 return res.send({ error: true, message: 'không có sản phẩm có id=' + id });
@@ -42,7 +55,6 @@ function getProduct(req, res) {
                 });
             }
         });
-
     }
     else {
         return res.send({ error: true, message: 'key không hợp lệ' });
@@ -52,29 +64,28 @@ function getProduct(req, res) {
 //lấy tất cả sản phẩm
 function getProducts(req, res) {
     let key = req.params.key;
+    let option = req.params.option;
     if (key == config.key) {
-        dbConn.query('SELECT `product_id` FROM `product` WHERE `status` = 1', function (error, results, fields) {
+        let sql = '';
+        switch (option) {
+            case '0':
+                sql = 'SELECT product_id FROM product WHERE status = 1';
+                break;
+            case '1':
+                sql = 'SELECT product_id FROM product';
+                break;
+            default:
+                return res.send({ error: true, message: 'key không hợp lệ' });
+        }
+
+
+        db.dbConn.query(sql, function (error, results, fields) {
             if (error) throw error;
             if (results == null || results.length === 0) {
-                return res.send({ error: true, message: 'không có sản phẩm trong cơ sở dữ liệu'});
+                return res.send({ error: true, message: 'không có sản phẩm trong cơ sở dữ liệu' });
             }
             else {
-                let result = [];
-                let i = 0;
-                results.map(item=>{
-                    axios.get(config.app_url+  `/api/product/` + item.product_id + `/` + req.params.key)
-                        .then(res => {
-                            const { data } = res.data;
-                            result.push(data[0]);
-                        })
-                        .catch(error => console.log(error))
-                        .finally(() => {
-                            i++;
-                            if (i === results.length) {
-                                return res.send({ error: false, data: result, message: 'tất cả thông tin sản phẩm' });
-                            }
-                        });
-                });
+                db.getProducts(results,option,req,res);
             }
         });
     }

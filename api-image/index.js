@@ -18,7 +18,7 @@ app.get('/api/image/:image_id/:key',
     }
 );
 
-app.listen(3000, function () {
+app.listen(3002, function () {
     console.log('Node app is running on port 3000');
 });
 module.exports = app;

@@ -7,16 +7,16 @@ function  getImage(req, res){
         dbConn.query('SELECT `image_name` FROM `image` WHERE `image_id` = ?', id, function (error, results, fields) {
             if (error) throw error;
             if (results == null || results.length === 0) {
-                return res.send({ error: true, message: 'không có hình' });
+                return res.send({ status: "fail", message: 'không có hình' });
             }
             else {
                 let img = config.url + results[0].image_name;
-                return res.send({ error: false, data: img, message: 'hình có id=' + id });
+                return res.send({ status: "success", data: img, message: 'hình có id=' + id });
             }
         });
     }
     else {
-        return res.send({ error: true, message: 'key không hợp lệ' });
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
     }
 }
 

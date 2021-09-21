@@ -1,2 +1,2 @@
 cd api-image
-node index.js
+npm start

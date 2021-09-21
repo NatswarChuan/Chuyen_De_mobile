@@ -1,16 +1,18 @@
-var config = require('../config/config');
-var dbConn = require('./Db'); 
-function  getImage(req, res){
+const express = require('express');
+const router = express.Router();
+var dbConn = require('../config/Db/config'); 
+
+router.get('/:image_id/:key',async (req, res)=>{
     let id = req.params.image_id;
     let key = req.params.key;
-    if (key == config.key) {
+    if (key == process.env.KEY) {
         dbConn.query('SELECT `image_name` FROM `image` WHERE `image_id` = ?', id, function (error, results, fields) {
             if (error) throw error;
             if (results == null || results.length === 0) {
                 return res.send({ status: "fail", message: 'không có hình' });
             }
             else {
-                let img = config.url + results[0].image_name;
+                let img = process.env.URL_IMG + results[0].image_name;
                 return res.send({ status: "success", data: img, message: 'hình có id=' + id });
             }
         });
@@ -18,8 +20,6 @@ function  getImage(req, res){
     else {
         return res.send({ status: "fail", message: 'key không hợp lệ' });
     }
-}
+});
 
-module.exports = {
-    getImage: getImage
-}
+module.exports = router;

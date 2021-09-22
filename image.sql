@@ -2,10 +2,10 @@
 -- version 5.0.2
 -- https://www.phpmyadmin.net/
 --
--- Máy chủ: 127.0.0.1:3306
--- Thời gian đã tạo: Th9 21, 2021 lúc 06:16 AM
--- Phiên bản máy phục vụ: 8.0.21
--- Phiên bản PHP: 7.3.21
+-- Host: 127.0.0.1:3306
+-- Generation Time: Sep 22, 2021 at 09:10 AM
+-- Server version: 8.0.21
+-- PHP Version: 7.3.21
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Cơ sở dữ liệu: `image`
+-- Database: `image`
 --
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `image`
+-- Table structure for table `image`
 --
 
 DROP TABLE IF EXISTS `image`;
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `image` (
 ) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `image`
+-- Dumping data for table `image`
 --
 
 INSERT INTO `image` (`image_id`, `image_title`, `image_name`) VALUES
@@ -58,6 +58,28 @@ INSERT INTO `image` (`image_id`, `image_title`, `image_name`) VALUES
 (16, 16, '16.png?alt=media&token=e60695ba-926f-4653-9da3-3b14e8d0bdae'),
 (17, 17, '17.png?alt=media&token=44eaca57-72c2-41a6-a1b5-36aa67962a61'),
 (18, 18, '18.png?alt=media&token=79218977-051b-4a07-8ed1-16f90cb5e68c');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `slider`
+--
+
+DROP TABLE IF EXISTS `slider`;
+CREATE TABLE IF NOT EXISTS `slider` (
+  `slider_id` int NOT NULL AUTO_INCREMENT,
+  `slider_image` int NOT NULL,
+  PRIMARY KEY (`slider_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `slider`
+--
+
+INSERT INTO `slider` (`slider_id`, `slider_image`) VALUES
+(1, 1),
+(2, 2),
+(3, 3);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

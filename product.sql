@@ -2,10 +2,10 @@
 -- version 5.0.2
 -- https://www.phpmyadmin.net/
 --
--- Máy chủ: 127.0.0.1:3307
--- Thời gian đã tạo: Th9 19, 2021 lúc 08:11 AM
--- Phiên bản máy phục vụ: 10.4.13-MariaDB
--- Phiên bản PHP: 7.3.21
+-- Host: 127.0.0.1:3306
+-- Generation Time: Sep 22, 2021 at 08:39 AM
+-- Server version: 8.0.21
+-- PHP Version: 7.3.21
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,48 +18,49 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Cơ sở dữ liệu: `product`
+-- Database: `product`
 --
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `category`
+-- Table structure for table `category`
 --
 
 DROP TABLE IF EXISTS `category`;
 CREATE TABLE IF NOT EXISTS `category` (
-  `category_id` int(11) NOT NULL AUTO_INCREMENT,
-  `category_view` int(11) NOT NULL DEFAULT 0,
-  `category_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `last_update` int(11) NOT NULL DEFAULT 0,
-  `status` int(11) NOT NULL DEFAULT 1,
+  `category_id` int NOT NULL AUTO_INCREMENT,
+  `category_image` int NOT NULL DEFAULT '1',
+  `category_view` int NOT NULL DEFAULT '0',
+  `category_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `last_update` int NOT NULL DEFAULT '0',
+  `status` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`category_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `category`
+-- Dumping data for table `category`
 --
 
-INSERT INTO `category` (`category_id`, `category_view`, `category_name`, `last_update`, `status`) VALUES
-(1, 0, 'Ốp lưng REAL', 0, 1),
-(2, 0, 'Ốp lưng FAKE', 0, 1);
+INSERT INTO `category` (`category_id`, `category_image`, `category_view`, `category_name`, `last_update`, `status`) VALUES
+(1, 1, 0, 'Ốp lưng REAL', 0, 1),
+(2, 1, 0, 'Ốp lưng FAKE', 0, 1);
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `category_product`
+-- Table structure for table `category_product`
 --
 
 DROP TABLE IF EXISTS `category_product`;
 CREATE TABLE IF NOT EXISTS `category_product` (
-  `category_id` int(11) NOT NULL,
-  `product_id` int(11) NOT NULL,
+  `category_id` int NOT NULL,
+  `product_id` int NOT NULL,
   PRIMARY KEY (`category_id`,`product_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `category_product`
+-- Dumping data for table `category_product`
 --
 
 INSERT INTO `category_product` (`category_id`, `product_id`) VALUES
@@ -71,49 +72,66 @@ INSERT INTO `category_product` (`category_id`, `product_id`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `comment`
+-- Table structure for table `comment`
 --
 
 DROP TABLE IF EXISTS `comment`;
 CREATE TABLE IF NOT EXISTS `comment` (
-  `comment_id` int(11) NOT NULL AUTO_INCREMENT,
-  `comment_rating` int(11) NOT NULL,
-  `comment_date` date NOT NULL,
-  `comment_content` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `product_id` int(11) NOT NULL,
+  `comment_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `comment_rating` int NOT NULL,
+  `comment_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `comment_content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `product_id` int NOT NULL,
   PRIMARY KEY (`comment_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `comment`
+-- Dumping data for table `comment`
 --
 
-INSERT INTO `comment` (`comment_id`, `comment_rating`, `comment_date`, `comment_content`, `product_id`) VALUES
-(1, 5, '2021-09-19', 'cái này là comment', 1),
-(2, 5, '2021-09-19', 'cái này là comment', 2),
-(3, 5, '2021-09-19', 'cái này là comment', 3),
-(4, 5, '2021-09-19', 'cái này là comment', 4),
-(5, 5, '2021-09-19', 'cái này là comment', 1),
-(6, 5, '2021-09-19', 'cái này là comment', 2),
-(7, 5, '2021-09-19', 'cái này là comment', 3),
-(8, 5, '2021-09-19', 'cái này là comment', 4);
+INSERT INTO `comment` (`comment_id`, `user_id`, `comment_rating`, `comment_date`, `comment_content`, `product_id`) VALUES
+(1, 1, 5, '2021-09-18 17:00:00', 'cái này là comment', 1),
+(2, 1, 5, '2021-09-18 17:00:00', 'cái này là comment', 2),
+(3, 1, 5, '2021-09-18 17:00:00', 'cái này là comment', 3),
+(4, 1, 5, '2021-09-18 17:00:00', 'cái này là comment', 4),
+(5, 1, 5, '2021-09-18 17:00:00', 'cái này là comment', 1),
+(6, 1, 5, '2021-09-18 17:00:00', 'cái này là comment', 2),
+(7, 1, 5, '2021-09-18 17:00:00', 'cái này là comment', 3),
+(8, 1, 5, '2021-09-18 17:00:00', 'cái này là comment', 4),
+(9, 1, 5, '2021-09-22 08:10:17', 'thêm comment', 2),
+(10, 1, 5, '2021-09-22 08:10:17', 'thêm comment', 2),
+(11, 1, 5, '2021-09-22 08:10:53', 'thêm comment', 2),
+(12, 1, 5, '2021-09-22 08:10:53', 'thêm comment', 2),
+(13, 1, 5, '2021-09-22 08:11:26', 'thêm comment', 2),
+(14, 1, 5, '2021-09-22 08:11:26', 'thêm comment', 2),
+(15, 1, 5, '2021-09-22 08:11:27', 'thêm comment', 2),
+(16, 1, 5, '2021-09-22 08:11:29', 'thêm comment', 2),
+(17, 1, 5, '2021-09-22 08:11:36', 'thêm comment', 2),
+(18, 1, 5, '2021-09-22 08:11:38', 'thêm comment', 2),
+(19, 1, 5, '2021-09-22 08:11:39', 'thêm comment', 2),
+(20, 1, 5, '2021-09-22 08:11:59', 'thêm comment', 2),
+(21, 1, 5, '2021-09-22 08:12:00', 'thêm comment', 2),
+(22, 1, 5, '2021-09-22 08:12:02', 'thêm comment', 2),
+(23, 1, 5, '2021-09-22 08:12:21', 'thêm comment', 2),
+(24, 1, 5, '2021-09-22 08:12:47', 'thêm comment', 2);
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `complaint`
+-- Table structure for table `complaint`
 --
 
 DROP TABLE IF EXISTS `complaint`;
 CREATE TABLE IF NOT EXISTS `complaint` (
-  `complaint_id` int(11) NOT NULL AUTO_INCREMENT,
-  `complaint_content` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `product_id` int(11) NOT NULL,
+  `complaint_id` int NOT NULL AUTO_INCREMENT,
+  `complaint_content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `product_id` int NOT NULL,
   PRIMARY KEY (`complaint_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `complaint`
+-- Dumping data for table `complaint`
 --
 
 INSERT INTO `complaint` (`complaint_id`, `complaint_content`, `product_id`) VALUES
@@ -129,32 +147,32 @@ INSERT INTO `complaint` (`complaint_id`, `complaint_content`, `product_id`) VALU
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `product`
+-- Table structure for table `product`
 --
 
 DROP TABLE IF EXISTS `product`;
 CREATE TABLE IF NOT EXISTS `product` (
-  `product_id` int(11) NOT NULL AUTO_INCREMENT,
-  `shop_id` int(11) NOT NULL,
-  `product_avatar` int(11) NOT NULL,
-  `product_quantity` int(11) DEFAULT NULL,
-  `product_view` int(11) NOT NULL DEFAULT 0,
+  `product_id` int NOT NULL AUTO_INCREMENT,
+  `shop_id` int NOT NULL,
+  `product_avatar` int NOT NULL,
+  `product_quantity` int DEFAULT NULL,
+  `product_view` int NOT NULL DEFAULT '0',
   `product_price` double NOT NULL,
-  `product_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `product_image` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `product_description` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `last_update` int(11) NOT NULL DEFAULT 0,
-  `status` int(11) NOT NULL DEFAULT 1,
+  `product_title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `product_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `product_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `last_update` int NOT NULL DEFAULT '0',
+  `status` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`product_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `product`
+-- Dumping data for table `product`
 --
 
 INSERT INTO `product` (`product_id`, `shop_id`, `product_avatar`, `product_quantity`, `product_view`, `product_price`, `product_title`, `product_image`, `product_description`, `last_update`, `status`) VALUES
-(1, 1, 4, NULL, 0, 50000, 'Ốp lưng Iphone 14', '1,2,3', 'Cái này là ốp lưng', 0, 1),
-(2, 1, 8, 100, 0, 50000, 'Ốp lưng Iphone 15', '5,6,7', 'Cái này là ốp lưng', 0, 1),
+(1, 1, 4, NULL, 1, 50000, 'Ốp lưng Iphone 14', '1,2,3', 'Cái này là ốp lưng', 0, 1),
+(2, 1, 8, 100, 3, 50000, 'Ốp lưng Iphone 15', '5,6,7', 'Cái này là ốp lưng', 0, 1),
 (3, 2, 12, NULL, 0, 50000, 'Ốp lưng Iphone 16', '9,10,11', 'Cái này là ốp lưng', 0, 1),
 (4, 2, 16, 100, 0, 50000, 'Ốp lưng Iphone 17', '13,14,15', 'Cái này là ốp lưng', 0, 1);
 COMMIT;

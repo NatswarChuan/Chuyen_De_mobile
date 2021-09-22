@@ -28,7 +28,7 @@ router.get('/all/:option/:key', async (req, res) => {
             else {
                 let i = 0;
                 results.map(item => {
-                    axios.get(process.env.IMG_URL + `/api/image/` + item.category_image + `/` + req.params.key)
+                    axios.get(process.env.IMG_URL + `/api/image/get/` + item.category_image + `/` + req.params.key)
                         .then(res => {
                             const { data } = res.data;
                             item.category_image = data;

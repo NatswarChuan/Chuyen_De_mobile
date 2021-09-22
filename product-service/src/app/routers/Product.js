@@ -32,7 +32,7 @@ router.get('/get/:product_id/:option/:key', async (req, res) => {
                 let i = 0;
 
                 //gọi API image lấy đường dẫn Avatar
-                axios.get(process.env.IMG_URL + `/api/image/` + results[0].product_avatar + `/` + req.params.key)
+                axios.get(process.env.IMG_URL + `/api/image/get/` + results[0].product_avatar + `/` + req.params.key)
                     .then(res => {
                         const { data } = res.data;
                         results[0].product_avatar = data;
@@ -41,7 +41,7 @@ router.get('/get/:product_id/:option/:key', async (req, res) => {
 
                 //gọi API image lấy đường dẫn các hình ảnh sản phẩm
                 arrImages.map(item => {
-                    axios.get(process.env.IMG_URL + `/api/image/` + item + `/` + req.params.key)
+                    axios.get(process.env.IMG_URL + `/api/image/get/` + item + `/` + req.params.key)
                         .then(res => {
                             const { data } = res.data;
                             results[0].product_image.push(data);

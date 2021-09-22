@@ -43,7 +43,7 @@ router.get('/all/:product_id/:key', async (req, res) => {
                          * đoạn này thay user_id thành thông tin user
                          */
                         // gọi API image lấy đường dẫn Avatar
-                        axios.get(process.env.IMG_URL + `/api/image/` + user.user_avatar + `/` + req.params.key)
+                        axios.get(process.env.IMG_URL + `/api/image/get/` + user.user_avatar + `/` + req.params.key)
                             .then(res => {
                                 const { data } = res.data;
                                 user.user_avatar = data;

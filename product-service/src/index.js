@@ -10,6 +10,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 var productRouter = require('./app/routers/Product');
 var categoryRouter = require('./app/routers/Category');
 var commentRouter = require('./app/routers/Comment');
+var complaintRouter = require('./app/routers/Complaint');
+
 app.set('port', process.env.PORT || 3001);
 
 app.get('/', function (req, res) {
@@ -21,6 +23,8 @@ app.use('/api/product',productRouter);
 app.use('/api/category',categoryRouter);
 
 app.use('/api/comment',commentRouter);
+
+app.use('/api/complaint',complaintRouter);
 
 app.listen(3001, function () {
     console.log('Product service port 3001');

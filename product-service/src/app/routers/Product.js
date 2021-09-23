@@ -224,7 +224,6 @@ router.get('/view/:product_id/:option/:key', async (req, res) => {
     else {
         return res.send({ status: "fail", message: 'key không hợp lệ' });
     }
-}
-);
+});
 
 module.exports = router;

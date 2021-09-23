@@ -18,6 +18,7 @@ function getProducts(results, option, req, res) {
             });
     });
 }
+
 module.exports = {
     getProducts,
 }

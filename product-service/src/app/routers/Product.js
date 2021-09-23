@@ -226,4 +226,36 @@ router.get('/view/:product_id/:option/:key', async (req, res) => {
     }
 });
 
+router.get('/shop/:shop_id/:option/:key', async (req, res) => {
+    let key = req.params.key;
+    let id = req.params.shop_id;
+    let option = req.params.option;
+    if (key == process.env.KEY) {
+        let sql = '';
+        switch (option) {
+            case '0':
+                sql = 'SELECT `product_id` FROM `product` WHERE `shop_id` = ? AND status = 1';
+                break;
+            case '1':
+                sql = 'SELECT `product_id` FROM `product` WHERE `shop_id` = ?';
+                break;
+            default:
+                return res.send({ status: "fail", message: 'option không hợp lệ' });
+        }
+
+        dbConn.query(sql,id, function (error, results, fields) {
+            if (error) throw error;
+            if (results == null || results.length === 0) {
+                return res.send({ status: "fail", message: 'không có sản phẩm trong cơ sở dữ liệu' });
+            }
+            else {
+                productModel.getProducts(results, option, req, res);
+            }
+        });
+    }
+    else {
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
+    }
+});
+
 module.exports = router;

@@ -2,10 +2,10 @@
 -- version 5.0.2
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1:3306
--- Generation Time: Sep 22, 2021 at 09:10 AM
--- Server version: 8.0.21
--- PHP Version: 7.3.21
+-- Máy chủ: 127.0.0.1:3306
+-- Thời gian đã tạo: Th9 24, 2021 lúc 04:53 PM
+-- Phiên bản máy phục vụ: 8.0.21
+-- Phiên bản PHP: 7.3.21
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `image`
+-- Cơ sở dữ liệu: `image`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `image`
+-- Cấu trúc bảng cho bảng `image`
 --
 
 DROP TABLE IF EXISTS `image`;
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `image` (
 ) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `image`
+-- Đang đổ dữ liệu cho bảng `image`
 --
 
 INSERT INTO `image` (`image_id`, `image_title`, `image_name`) VALUES
@@ -62,7 +62,7 @@ INSERT INTO `image` (`image_id`, `image_title`, `image_name`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `slider`
+-- Cấu trúc bảng cho bảng `slider`
 --
 
 DROP TABLE IF EXISTS `slider`;
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `slider` (
 ) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `slider`
+-- Đang đổ dữ liệu cho bảng `slider`
 --
 
 INSERT INTO `slider` (`slider_id`, `slider_image`) VALUES

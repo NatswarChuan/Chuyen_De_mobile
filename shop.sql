@@ -2,9 +2,9 @@
 -- version 5.0.2
 -- https://www.phpmyadmin.net/
 --
--- Máy chủ: 127.0.0.1:3307
--- Thời gian đã tạo: Th9 19, 2021 lúc 08:12 AM
--- Phiên bản máy phục vụ: 10.4.13-MariaDB
+-- Máy chủ: 127.0.0.1:3306
+-- Thời gian đã tạo: Th9 24, 2021 lúc 04:53 PM
+-- Phiên bản máy phục vụ: 8.0.21
 -- Phiên bản PHP: 7.3.21
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -29,10 +29,10 @@ SET time_zone = "+00:00";
 
 DROP TABLE IF EXISTS `revenue`;
 CREATE TABLE IF NOT EXISTS `revenue` (
-  `revenue_id` int(11) NOT NULL AUTO_INCREMENT,
-  `revenue_month` int(11) NOT NULL,
+  `revenue_id` int NOT NULL AUTO_INCREMENT,
+  `revenue_month` int NOT NULL,
   `revenue_money` double NOT NULL,
-  `shop_id` int(11) NOT NULL,
+  `shop_id` int NOT NULL,
   PRIMARY KEY (`revenue_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -54,13 +54,13 @@ INSERT INTO `revenue` (`revenue_id`, `revenue_month`, `revenue_money`, `shop_id`
 
 DROP TABLE IF EXISTS `shop`;
 CREATE TABLE IF NOT EXISTS `shop` (
-  `shop_id` int(11) NOT NULL AUTO_INCREMENT,
-  `shop_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `shop_description` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `shop_owner` int(11) NOT NULL,
-  `shop_avatar` int(11) NOT NULL,
-  `last_update` int(11) NOT NULL DEFAULT 0,
-  `status` int(11) NOT NULL DEFAULT 1,
+  `shop_id` int NOT NULL AUTO_INCREMENT,
+  `shop_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `shop_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `shop_owner` int NOT NULL,
+  `shop_avatar` int NOT NULL,
+  `last_update` int NOT NULL DEFAULT '0',
+  `status` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`shop_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

@@ -2,10 +2,10 @@
 -- version 5.0.2
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1:3306
--- Generation Time: Sep 22, 2021 at 08:39 AM
--- Server version: 8.0.21
--- PHP Version: 7.3.21
+-- Máy chủ: 127.0.0.1:3306
+-- Thời gian đã tạo: Th9 24, 2021 lúc 04:53 PM
+-- Phiên bản máy phục vụ: 8.0.21
+-- Phiên bản PHP: 7.3.21
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `product`
+-- Cơ sở dữ liệu: `product`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `category`
+-- Cấu trúc bảng cho bảng `category`
 --
 
 DROP TABLE IF EXISTS `category`;
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `category` (
 ) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `category`
+-- Đang đổ dữ liệu cho bảng `category`
 --
 
 INSERT INTO `category` (`category_id`, `category_image`, `category_view`, `category_name`, `last_update`, `status`) VALUES
@@ -49,7 +49,7 @@ INSERT INTO `category` (`category_id`, `category_image`, `category_view`, `categ
 -- --------------------------------------------------------
 
 --
--- Table structure for table `category_product`
+-- Cấu trúc bảng cho bảng `category_product`
 --
 
 DROP TABLE IF EXISTS `category_product`;
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `category_product` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `category_product`
+-- Đang đổ dữ liệu cho bảng `category_product`
 --
 
 INSERT INTO `category_product` (`category_id`, `product_id`) VALUES
@@ -72,7 +72,7 @@ INSERT INTO `category_product` (`category_id`, `product_id`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `comment`
+-- Cấu trúc bảng cho bảng `comment`
 --
 
 DROP TABLE IF EXISTS `comment`;
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS `comment` (
 ) ENGINE=MyISAM AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `comment`
+-- Đang đổ dữ liệu cho bảng `comment`
 --
 
 INSERT INTO `comment` (`comment_id`, `user_id`, `comment_rating`, `comment_date`, `comment_content`, `product_id`) VALUES
@@ -119,7 +119,7 @@ INSERT INTO `comment` (`comment_id`, `user_id`, `comment_rating`, `comment_date`
 -- --------------------------------------------------------
 
 --
--- Table structure for table `complaint`
+-- Cấu trúc bảng cho bảng `complaint`
 --
 
 DROP TABLE IF EXISTS `complaint`;
@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS `complaint` (
 ) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `complaint`
+-- Đang đổ dữ liệu cho bảng `complaint`
 --
 
 INSERT INTO `complaint` (`complaint_id`, `complaint_content`, `product_id`) VALUES
@@ -147,17 +147,19 @@ INSERT INTO `complaint` (`complaint_id`, `complaint_content`, `product_id`) VALU
 -- --------------------------------------------------------
 
 --
--- Table structure for table `product`
+-- Cấu trúc bảng cho bảng `product`
 --
 
 DROP TABLE IF EXISTS `product`;
 CREATE TABLE IF NOT EXISTS `product` (
   `product_id` int NOT NULL AUTO_INCREMENT,
+  `product_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `shop_id` int NOT NULL,
   `product_avatar` int NOT NULL,
   `product_quantity` int DEFAULT NULL,
-  `product_view` int NOT NULL DEFAULT '0',
+  `product_view` double NOT NULL DEFAULT '0',
   `product_price` double NOT NULL,
+  `product_sale` int NOT NULL DEFAULT '0',
   `product_title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `product_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `product_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -167,14 +169,14 @@ CREATE TABLE IF NOT EXISTS `product` (
 ) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `product`
+-- Đang đổ dữ liệu cho bảng `product`
 --
 
-INSERT INTO `product` (`product_id`, `shop_id`, `product_avatar`, `product_quantity`, `product_view`, `product_price`, `product_title`, `product_image`, `product_description`, `last_update`, `status`) VALUES
-(1, 1, 4, NULL, 1, 50000, 'Ốp lưng Iphone 14', '1,2,3', 'Cái này là ốp lưng', 0, 1),
-(2, 1, 8, 100, 3, 50000, 'Ốp lưng Iphone 15', '5,6,7', 'Cái này là ốp lưng', 0, 1),
-(3, 2, 12, NULL, 0, 50000, 'Ốp lưng Iphone 16', '9,10,11', 'Cái này là ốp lưng', 0, 1),
-(4, 2, 16, 100, 0, 50000, 'Ốp lưng Iphone 17', '13,14,15', 'Cái này là ốp lưng', 0, 1);
+INSERT INTO `product` (`product_id`, `product_date`, `shop_id`, `product_avatar`, `product_quantity`, `product_view`, `product_price`, `product_sale`, `product_title`, `product_image`, `product_description`, `last_update`, `status`) VALUES
+(1, '2021-09-24 08:10:19', 1, 4, NULL, 1, 50000, 50, 'Ốp lưng Iphone 14', '1,2,3', 'Cái này là ốp lưng', 0, 1),
+(2, '2021-09-24 08:10:19', 1, 8, 100, 3, 50000, 0, 'Ốp lưng Iphone 15', '5,6,7', 'Cái này là ốp lưng', 0, 1),
+(3, '2021-09-24 08:10:19', 2, 12, NULL, 0, 50000, 0, 'Ốp lưng Iphone 16', '9,10,11', 'Cái này là ốp lưng', 0, 1),
+(4, '2021-09-24 08:10:19', 2, 16, 100, 0, 50000, 0, 'Ốp lưng Iphone 17', '13,14,15', 'Cái này là ốp lưng', 0, 1);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

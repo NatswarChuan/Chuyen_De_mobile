@@ -4,6 +4,9 @@ var dbConn = require('../config/Db/config');
 var productModel = require('../Model/ProductModel');
 const axios = require('axios');
 
+/**
+ *  lấy danh sách danh mục 
+ */
 router.get('/all/:option/:key', async (req, res) => {
     let id = req.params.product_id;
     let key = req.params.key;
@@ -50,6 +53,9 @@ router.get('/all/:option/:key', async (req, res) => {
 }
 );
 
+/**
+ * lấy các sản phẩm thuộc danh mục
+ */
 router.get('/get/:category_id/:option/:key', async (req, res) => {
     let id = req.params.category_id;
     let key = req.params.key;

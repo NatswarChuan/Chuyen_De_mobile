@@ -3,6 +3,9 @@ const router = express.Router();
 var dbConn = require('../config/Db/config');
 const axios = require('axios');
 
+/**
+ * lấy comment của sản phẩm
+ */
 router.get('/all/:product_id/:key', async (req, res) => {
     let id = req.params.product_id;
     let key = req.params.key;
@@ -74,6 +77,9 @@ router.get('/all/:product_id/:key', async (req, res) => {
     }
 });
 
+/**
+ * thêm comment của người dùng
+ */
 router.post('/insert/:key', async (req, res) => {
     let key = req.params.key;
     if (key == process.env.KEY) {

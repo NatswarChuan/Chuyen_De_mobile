@@ -4,6 +4,9 @@ var dbConn = require('../config/Db/config');
 var productModel = require('../Model/ProductModel');
 const axios = require('axios');
 
+/**
+ * trả về thông tin 1 sản phẩm theo option
+ */
 router.get('/get/:product_id/:option/:key', async (req, res) => {
     let id = req.params.product_id;
     let key = req.params.key;
@@ -62,6 +65,9 @@ router.get('/get/:product_id/:option/:key', async (req, res) => {
     }
 });
 
+/**
+ * lấy nhiều sản phẩm theo option
+ */
 router.get('/all/:option/:key', async (req, res) => {
     let key = req.params.key;
     let option = req.params.option;
@@ -94,6 +100,9 @@ router.get('/all/:option/:key', async (req, res) => {
     }
 });
 
+/**
+ * lấy nhiều sản phẩm theo từ khóa và option
+ */
 router.get('/search/:key_search/:option/:key', async (req, res) => {
     let key = req.params.key;
     let option = req.params.option;
@@ -127,6 +136,9 @@ router.get('/search/:key_search/:option/:key', async (req, res) => {
     }
 });
 
+/**
+ * cập nhật lượt xem của sản phẩm và trả về thông tin sản phẩm
+ */
 router.get('/view/:product_id/:option/:key', async (req, res) => {
     let key = req.params.key;
     if (key == process.env.KEY) {
@@ -226,6 +238,9 @@ router.get('/view/:product_id/:option/:key', async (req, res) => {
     }
 });
 
+/**
+ * lấy tất cả sản phẩm thuộc 1 shop
+ */
 router.get('/shop/:shop_id/:option/:key', async (req, res) => {
     let key = req.params.key;
     let id = req.params.shop_id;

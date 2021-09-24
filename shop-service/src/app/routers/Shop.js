@@ -4,6 +4,9 @@ var dbConn = require('../config/Db/config');
 var productModel = require('../Model/ProductModel');
 const axios = require('axios');
 
+/**
+ * Trả về thông tin của shop
+ */
 router.get('/info/:shop_id/:option/:key', async (req, res) => {
     let id = req.params.shop_id;
     let key = req.params.key;
@@ -12,7 +15,7 @@ router.get('/info/:shop_id/:option/:key', async (req, res) => {
     if (key == process.env.KEY) {
         switch (option) {
             case '0':
-                sql = 'SELECT * FROM `shop` WHERE `shop_id` = ? AND status = 1';
+                sql = 'SELECT * FROM `shop` WHERE `shop_id` = ? AND status = 1';s
                 break;
             case '1':
                 sql = 'SELECT * FROM `shop` WHERE `shop_id` = ?';

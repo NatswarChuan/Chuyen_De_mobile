@@ -3,6 +3,9 @@ const router = express.Router();
 var dbConn = require('../config/Db/config');
 const axios = require('axios');
 
+/**
+ * Trả về hình ảnh của slide
+ */
 router.get('/all/:key', async (req, res) => {
     let key = req.params.key;
     if (key == process.env.KEY) {

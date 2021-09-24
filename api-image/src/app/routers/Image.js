@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 var dbConn = require('../config/Db/config'); 
 
+/**
+ * Trả về đường dẫn hình ảnh
+ */
 router.get('/get/:image_id/:key',async (req, res)=>{
     let id = req.params.image_id;
     let key = req.params.key;

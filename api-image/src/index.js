@@ -8,13 +8,6 @@ app.get('/', function (req, res) {
     return res.send({ error: true, message: 'hello' })
 });
 
-//Trả về đường link lưu hình ảnh
-// app.get('/api/image/:image_id/:key',
-//     function (req, res) {
-//         imageModel.getImage(req, res);
-//     }
-// );
-
 app.use('/api/image',imageRouter);
 
 app.use('/api/slider',sliderRouter);

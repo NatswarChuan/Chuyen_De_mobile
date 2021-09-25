@@ -80,7 +80,7 @@ app.get('/api/user/create/:user_permission/:user_name/:user_password/:user_email
                                     con.query(user_infomation, function (err, results) {
                                         console.log(req.ip + ' : Register Successs information');
                                     })
-                                    con.query('INSERT INTO `profile`(`user_id`) VALUES (?)',[results.insertId], function (err, results) {
+                                    con.query('INSERT INTO `profile`(`user_id`) VALUES (?)', [results.insertId], function (err, results) {
                                         console.log(req.ip + ' : Register Successs profile');
                                     })
                                     var temp = { 'user_id': id, 'user_name': user_name, 'user_password': user_password }
@@ -141,7 +141,7 @@ app.get('/api/user/login/:user_email/:user_password/:key', function (request, re
 });
 
 //lấy thông tin tài khoản khi đã xác thực
-app.get('/api/login', function (request, response) {
+app.get('/api/user/loginUser', function (request, response) {
     if (request.session.loggedin) {
         var data = { 'user_id': request.session.user_id, 'email': decrypt(request.session.email) };
         response.send(data_json_endcode(data, 'Đăng nhập thành công!!'));
@@ -152,7 +152,7 @@ app.get('/api/login', function (request, response) {
 });
 
 //Hàm đăng xuất
-app.get('/api/logout', function (request, response) {
+app.get('/api/user/logout', function (request, response) {
     if (request.session.loggedin) {
         request.session.destroy();
         console.log(request.ip + ' : Logout success!!!')
@@ -164,22 +164,22 @@ app.get('/api/logout', function (request, response) {
 });
 
 //Hàm lấy thông tin người dùng
-app.get('/api/get/user', function (request, response) {
+app.get('/api/user/get/profile', function (request, response) {
     if (request.session.loggedin) {
         var id = request.session.user_id;
-        con.query('SELECT * FROM `profile` WHERE user_id='+id, function (error, results, fields) {
-            var data = {'id':null,'phone':null,'name':null,'birthday':null};
+        con.query('SELECT * FROM `profile` WHERE user_id=' + id, function (error, results, fields) {
+            var data = { 'id': null, 'phone': null, 'name': null, 'birthday': null };
             var phone;
             var name;
             var birthday;
-            if(results!=null){
+            if (results != null) {
                 Object.keys(results).forEach(function (key) {
                     var row = results[key];
                     phone = row.profile_phone;
                     name = row.profile_name;
                     birthday = row.profile_birthday
                 });
-                data = {'id':id,'phone':phone,'name':name,'birthday':birthday};
+                data = { 'id': id, 'phone': phone, 'name': name, 'birthday': birthday };
             }
             response.send(data_json_endcode(data, 'Lấy dữ liệu thành công!!'));
         });
@@ -190,7 +190,7 @@ app.get('/api/get/user', function (request, response) {
 });
 
 //Hàm Kiểm tra trạng thái login
-app.get('/api/check/login', function (request, response) {
+app.get('/api/user/check/login', function (request, response) {
     if (request.session.loggedin) {
         response.send(data_json_endcode(true, 'Đã đăng nhập!!'));
     } else {
@@ -198,6 +198,71 @@ app.get('/api/check/login', function (request, response) {
     }
     response.end();
 });
+
+//Hàm lấy thông tin user
+app.get('/api/user/get/user', function (request, response) {
+    if (request.session.loggedin) {
+        var id = request.session.user_id;
+        var data;
+        var user_key;
+        var user_name;
+        var user_avatar;
+        var user_status;
+        var user_last_update;
+        con.query('SELECT * FROM `user` WHERE user_id = ' + id, function (error, results, fields) {
+            Object.keys(results).forEach(function (key) {
+                var row = results[key];
+                user_key = row.user_key;
+                user_name = row.user_name;
+                user_avatar = row.user_avatar;
+                user_status = row.status;
+                user_last_update = row.last_update
+            });
+            data = { 'user_id': id, 'user_key': user_key, 'user_name': user_name, 'user_avatar': user_avatar, 'user_status': user_status, 'user_last_update': user_last_update }
+            response.send(data_json_endcode(data, 'Lấy thành công!!'));
+        })
+    } else {
+        response.send(data_json_endcode(false, 'Chưa đăng nhập!!'));
+    }
+});
+
+//Hàm Update user
+app.get('/api/user/update/user/:user_key/:user_name/:user_avatar/:status', function (request, response) {
+    if (request.session.loggedin) {
+        var user_id = request.session.user_id
+        var user_key = request.params.user_key
+        var user_name = request.params.user_name
+        var user_avatar = request.params.user_avatar
+        var last_update = request.session.user_id;
+        var user_status = request.params.status
+        con.query('UPDATE `user` SET `user_key`=?,`user_name`=?,`user_avatar`=?,`last_update`=?,`status`=? WHERE user_id = ? ', [user_key, user_name, user_avatar, last_update, user_status, user_id], function (error, results, fields) {
+            var data = { 'user_id': user_id, 'user_key': user_key, 'user_name': user_name, 'user_avatar': user_avatar, 'user_status': user_status, 'user_last_update': last_update }
+            response.send(data_json_endcode(data, 'Sửa thông tin thành công!!'));
+        })
+    } else {
+        response.send(data_json_endcode(false, 'Chưa đăng nhập!!'));
+    }
+});
+
+//Hàm update profile
+app.get('/api/user/update/profile/:profile_name/:profile_phone/:profile_birthday', function (request, response) {
+    if (request.session.loggedin) {
+        var user_id = request.session.user_id
+        var profile_phone = request.params.profile_phone
+        var profile_name = request.params.profile_name
+        var profile_birthday =  request.params.profile_birthday
+        con.query('UPDATE `profile` SET`profile_phone`= ?,`profile_birthday`=?,`profile_name`= ?,`last_update`= ? WHERE user_id =?', [profile_phone, profile_birthday, profile_name, user_id, user_id], function (error, results, fields) {
+            var data = { 'user_id': user_id, 'profile_name': profile_name, 'profile_phone': profile_phone, 'profile_birthday': profile_birthday }
+            response.send(data_json_endcode(data, 'Sửa thông tin thành công!!'));
+        })
+    } else {
+        response.send(data_json_endcode(false, 'Chưa đăng nhập!!'));
+    }
+});
+
+//Hàm lấy thông báo
+
+
 
 //Hàm check User Name tồn tại
 function check_user_name_exits(user_name, callback) {

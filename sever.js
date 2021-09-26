@@ -6,10 +6,13 @@ var cookieParser = require('cookie-parser');
 var session = require('express-session');
 const server = http.createServer(app);
 var mysql = require('mysql');
+var _ = require('lodash');
 const port = 3000;
+var nodemailer = require('nodemailer');
+var smtpTransport = require('nodemailer-smtp-transport');
 
 const APIs_KEY = 'e4611a028c71342a5b083d2cbf59c494';
-
+var codepin = [];
 var con = mysql.createConnection({
     host: "localhost",
     user: "root",
@@ -41,6 +44,18 @@ server.listen(port, () => {
     console.log('Listen on port ' + port + '...')
 
 });
+
+//Thông tin Mailer
+var transporter = nodemailer.createTransport(smtpTransport({
+    service: 'gmail',
+    host: 'smtp.gmail.com',
+    auth: {
+        user: 'minecaft94@gmail.com',
+        pass: '0613885315'
+    }
+}));
+
+
 
 //1.Thêm user trên app người dùng
 app.get('/api/user/create/:user_permission/:user_name/:user_password/:user_email/:key', (req, res, next) => {
@@ -250,7 +265,7 @@ app.get('/api/user/update/profile/:profile_name/:profile_phone/:profile_birthday
         var user_id = request.session.user_id
         var profile_phone = request.params.profile_phone
         var profile_name = request.params.profile_name
-        var profile_birthday =  request.params.profile_birthday
+        var profile_birthday = request.params.profile_birthday
         con.query('UPDATE `profile` SET`profile_phone`= ?,`profile_birthday`=?,`profile_name`= ?,`last_update`= ? WHERE user_id =?', [profile_phone, profile_birthday, profile_name, user_id, user_id], function (error, results, fields) {
             var data = { 'user_id': user_id, 'profile_name': profile_name, 'profile_phone': profile_phone, 'profile_birthday': profile_birthday }
             response.send(data_json_endcode(data, 'Sửa thông tin thành công!!'));
@@ -260,9 +275,53 @@ app.get('/api/user/update/profile/:profile_name/:profile_phone/:profile_birthday
     }
 });
 
-//Hàm lấy thông báo
+//Hàm đặt lại mật khẩu gửi mail code
+app.get('/api/user/forgot/password/:email', function (request, response) {
+    var email = request.params.email;
+    var codePinTemp = Math.random().toString().substr(2, 6);
 
+    var mailOptions = {
+        from: email,
+        to: email,
+        subject: 'Quên mật khẩu Code Pin :' + codePinTemp,
+        text: 'Mã code chỉ có hiệu lực trong 1 phút \n Code pin: ' + codePinTemp
+    };
 
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            console.log(error);
+            response.send(error_Print(556, 'Vui lòng kiểm tra lại email!!'))
+        } else {
+            codepin.push({ 'email': email, 'codePin': codePinTemp });
+            setTimeout(function () {
+                var valuesToRemove = [codePinTemp]
+                codepin = codepin.filter(codepin => !valuesToRemove.includes(codepin.codePin))
+            }, 60000);
+            console.log('Email sent: ' + info.response);
+            response.send(data_json_endcode(null, 'Vui lòng check mail!!'))
+        }
+    });
+});
+//Hàm check codePin
+app.get('/api/user/forgot/password/checkPin/:email/:codePin', function (request, response) {
+    var codePinTemp = request.params.codePin;
+    var email = request.params.email
+    var dataTemp = { 'email': email, 'codePin': codePinTemp };
+    if (codepin.some(item => _.isEqual(item, dataTemp)) == true) {
+        response.send(data_json_endcode(null, "Xác nhận thành công!!"))
+    } else {
+        response.send(error_Print('500', 'Mã code không hợp lệ!!'))
+    }
+});
+//Hàm đổi mật khẩu
+app.get('/api/user/forgot/password/center/:email/:password', function (request, response) {
+    var password = request.params.password;
+    var email = request.params.email;
+    con.query('UPDATE `information` SET `information_password`= ? WHERE information_email = ?' ,[password,email], function (error, results, fields) {
+       response.send(data_json_endcode(true,'Đổi mật khẩu thành công vui lòng đăng nhập!!!'))
+    });
+
+});
 
 //Hàm check User Name tồn tại
 function check_user_name_exits(user_name, callback) {

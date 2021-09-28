@@ -258,7 +258,43 @@ router.get('/shop/:shop_id/:option/:key', async (req, res) => {
                 return res.send({ status: "fail", message: 'option không hợp lệ' });
         }
 
-        dbConn.query(sql,id, function (error, results, fields) {
+        dbConn.query(sql, id, function (error, results, fields) {
+            if (error) throw error;
+            if (results == null || results.length === 0) {
+                return res.send({ status: "fail", message: 'không có sản phẩm trong cơ sở dữ liệu' });
+            }
+            else {
+                productModel.getProducts(results, option, req, res);
+            }
+        });
+    }
+    else {
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
+    }
+});
+
+/**
+ * lấy sản phẩm theo trang
+ */
+router.get('/page/:page/:option/:key', async (req, res) => {
+    let key = req.params.key;
+    let option = req.params.option;
+    let page = 12 * page;
+    if (key == process.env.KEY) {
+        let sql = '';
+        switch (option) {
+            case '0':
+                sql = 'SELECT product_id FROM product WHERE status = 1 ORDER BY `product`.`product_date` DESC LIMIT 1,?';
+                break;
+            case '1':
+                sql = 'SELECT product_id FROM product ORDER BY `product`.`product_date` DESC LIMIT 1,?';
+                break;
+            default:
+                return res.send({ status: "fail", message: 'key không hợp lệ' });
+        }
+
+
+        dbConn.query(sql,page, function (error, results, fields) {
             if (error) throw error;
             if (results == null || results.length === 0) {
                 return res.send({ status: "fail", message: 'không có sản phẩm trong cơ sở dữ liệu' });

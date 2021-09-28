@@ -19,53 +19,30 @@ router.get('/all/:product_id/:key', async (req, res) => {
             else {
                 let i = 0;
                 results.map(comment => {
-                    /**
-                    * giả lập lấy thông tin user
-                    * thay thế bằng dùng API để lấy
-                    */
-                    var mysql = require('mysql');
-                    var dbConn_user = mysql.createConnection({
-                        host: 'localhost',
-                        user: 'root',
-                        password: '',
-                        database: 'user'
-                    });
-                    dbConn_user.connect();
 
-                    const sql = 'SELECT `user_name`,`user_avatar` FROM `user` WHERE `user_id` = ?';
-
-                    let user = null;
-                    user_id = comment.user_id;
-                    dbConn_user.query(sql, user_id, function (error, result, fields) {
-                        if (error) throw error;
-                        if (!(result == null || results.length === 0)) {
-                            user = result[0];
-                        }
-
-                        /**
-                         * đoạn này thay user_id thành thông tin user
-                         */
-                        // gọi API image lấy đường dẫn Avatar
-                        axios.get(process.env.IMG_URL + `/api/image/get/` + user.user_avatar + `/` + req.params.key)
-                            .then(res => {
-                                const { data } = res.data;
-                                user.user_avatar = data;
-                            })
-                            .catch(error => console.log(error))
-                            .finally(() => {
-                                delete comment["user_id"];
-                                comment.user = user;
-                                i++;
-                                if (i === results.length) {
-                                    return res.send({ status: "success", data: results, message: 'comment của sản phẩm có id=' + id });
-                                }
-                            });
-                    });
-
-                    /**
-                     * kết thúc giả lập
-                     */
-
+                    let user;
+                    axios.get(process.env.USER_URL + `/api/user/get/user/by/` + comment.user_id)
+                        .then(res => {
+                            const { data } = res.data;
+                            user = data;
+                        })
+                        .catch(error => console.log(error))
+                        .finally(() => {
+                            axios.get(process.env.IMG_URL + `/api/image/get/` + user.user_avatar + `/` + req.params.key)
+                                .then(res => {
+                                    const { data } = res.data;
+                                    user.user_avatar = data;
+                                })
+                                .catch(error => console.log(error))
+                                .finally(() => {
+                                    delete comment["user_id"];
+                                    comment.user = user;
+                                    i++;
+                                    if (i === results.length) {
+                                        return res.send({ status: "success", data: results, message: 'comment của sản phẩm có id=' + id });
+                                    }
+                                });
+                        });
 
                 })
 

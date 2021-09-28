@@ -241,6 +241,30 @@ app.get('/api/user/get/user', function (request, response) {
     }
 });
 
+//Hàm lấy thông tin user theo id
+app.get('/api/user/get/user/by/:id', function (request, response) {
+    var id = request.params.id;
+    var data;
+    var user_key;
+    var user_name;
+    var user_avatar;
+    var user_status;
+    var user_last_update;
+    con.query('SELECT * FROM `user` WHERE user_id = ' + id, function (error, results, fields) {
+        Object.keys(results).forEach(function (key) {
+            var row = results[key];
+            user_key = row.user_key;
+            user_name = row.user_name;
+            user_avatar = row.user_avatar;
+            user_status = row.status;
+            user_last_update = row.last_update
+        });
+        data = { 'user_id': id, 'user_key': user_key, 'user_name': user_name, 'user_avatar': user_avatar, 'user_status': user_status, 'user_last_update': user_last_update }
+        response.send(data_json_endcode(data, 'Lấy thành công!!'));
+    })
+});
+
+
 //Hàm Update user
 app.get('/api/user/update/user/:user_key/:user_name/:user_avatar/:status', function (request, response) {
     if (request.session.loggedin) {
@@ -317,8 +341,8 @@ app.get('/api/user/forgot/password/checkPin/:email/:codePin', function (request,
 app.get('/api/user/forgot/password/center/:email/:password', function (request, response) {
     var password = request.params.password;
     var email = request.params.email;
-    con.query('UPDATE `information` SET `information_password`= ? WHERE information_email = ?' ,[password,email], function (error, results, fields) {
-       response.send(data_json_endcode(true,'Đổi mật khẩu thành công vui lòng đăng nhập!!!'))
+    con.query('UPDATE `information` SET `information_password`= ? WHERE information_email = ?', [password, email], function (error, results, fields) {
+        response.send(data_json_endcode(true, 'Đổi mật khẩu thành công vui lòng đăng nhập!!!'))
     });
 
 });

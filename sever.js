@@ -10,8 +10,34 @@ var _ = require('lodash');
 const port = 3000;
 var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
-var MySQLStore = require('express-mysql-session')(session);
 
+const redis = require('redis');
+const connectRedis = require('connect-redis');
+// enable this if you run behind a proxy (e.g. nginx)
+const RedisStore = connectRedis(session)
+//Configure redis client
+const redisClient = redis.createClient({
+    host: 'localhost',
+    port: 6379
+})
+redisClient.on('error', function (err) {
+    console.log('Could not establish a connection with redis. ' + err);
+});
+redisClient.on('connect', function (err) {
+    console.log('Connected to redis successfully');
+});
+//Configure session middleware
+app.use(session({
+    store: new RedisStore({ client: redisClient }),
+    secret: 'secret$%^134',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false, // if true only transmit cookie over https
+        httpOnly: false, // if true prevent client side JS from reading the cookie 
+        maxAge: 1000 * 60 * 10 // session max age in miliseconds
+    }
+}))
 const APIs_KEY = 'e4611a028c71342a5b083d2cbf59c494';
 var codepin = [];
 var con = mysql.createConnection({
@@ -20,52 +46,8 @@ var con = mysql.createConnection({
     password: "123",
     database: "user"
 });
-var options = {
-	// Host name for database connection:
-	host: 'localhost',
-	// Port number for database connection:
-	port: 3306,
-	// Database user:
-	user: 'root',
-	// Password for the above database user:
-	password: '123',
-	// Database name:
-	database: 'session_test',
-	// Whether or not to automatically check for and clear expired sessions:
-	clearExpired: true,
-	// How frequently expired sessions will be cleared; milliseconds:
-	checkExpirationInterval: 900000,
-	// The maximum age of a valid session; milliseconds:
-	expiration: 86400000,
-	// Whether or not to create the sessions database table, if one does not already exist:
-	createDatabaseTable: true,
-	// Number of connections when creating a connection pool:
-	connectionLimit: 1,
-	// Whether or not to end the database connection when the store is closed.
-	// The default value of this option depends on whether or not a connection was passed to the constructor.
-	// If a connection object is passed to the constructor, the default value for this option is false.
-	endConnectionOnClose: true,
-	charset: 'utf8mb4_bin',
-	schema: {
-		tableName: 'sessions',
-		columnNames: {
-			session_id: 'session_id',
-			expires: 'expires',
-			data: 'data'
-		}
-	}
-};
-var sessionStore = new MySQLStore(options);
 
 app.use(cookieParser())
-app.use(session({
-	key: 'session_cookie_name',
-	secret: 'session_cookie_secret',
-	store: sessionStore,
-	resave: false,
-	saveUninitialized: false
-}));
-
 
 const crypto = require('crypto');
 const algorithm = 'aes-256-cbc';

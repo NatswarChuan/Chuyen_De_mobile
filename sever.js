@@ -165,11 +165,6 @@ app.get('/api/user/login/:user_email/:user_password/:key', function (request, re
                 request.session.user_id = id;
                 request.session.email = encrypt(email);
                 request.session.cookie.maxAge = 365 * 24 * 60 * 60 * 1000;
-                axios.get(`${sever_2}/api/user/login/save/sever/${id}/${email}`)
-                    .then(function (response) {
-                    })
-                    .catch(function (error) {
-                    });
                 response.send(data_json_endcode(null, 'Đăng nhập thành công!!'));
                 console.log(request.ip + ' : Login success!!!')
             } else {
@@ -199,11 +194,6 @@ app.get('/api/user/logout', function (request, response) {
     if (request.session.loggedin) {
         request.session.destroy();
         console.log(request.ip + ' : Logout success!!!')
-        axios.get(`${sever_2}'/api/user/logout/sever/other'`)
-                    .then(function (response) {
-                    })
-                    .catch(function (error) {
-                    });
         response.send(data_json_endcode(null, 'Đăng xuất thành công!!'));
     } else {
         response.send(error_Print('faild', 'Bạn chưa đăng nhập'));
@@ -379,20 +369,7 @@ app.get('/api/user/forgot/password/center/:email/:password', function (request, 
     });
 
 });
-//Gửi login cho sever khác
-app.get('/api/user/login/save/sever/:id/:email', function (request, response) {
-    request.session.loggedin = true;
-    request.session.user_id = id;
-    request.session.email = encrypt(email);
-    request.session.cookie.maxAge = 365 * 24 * 60 * 60 * 1000;
-    response.send(data_json_endcode(null, 'Gửi thành công'));
-});
 
-//đăng xuất sever khác
-app.get('/api/user/logout/sever/other', function (request, response) {
-    request.session.destroy();
-    response.send(error_Print(520,'Thành công'))
-});
 
 //Hàm check User Name tồn tại
 function check_user_name_exits(user_name, callback) {

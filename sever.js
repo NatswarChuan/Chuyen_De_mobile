@@ -10,7 +10,7 @@ var _ = require('lodash');
 const port = 3000;
 var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
-const axios = require('axios');
+var md5 = require('md5');
 const sever_2 = '127.0.0.1:3001'
 const redis = require('redis');
 const connectRedis = require('connect-redis');
@@ -18,9 +18,8 @@ const connectRedis = require('connect-redis');
 const RedisStore = connectRedis(session)
 //Configure redis client
 const redisClient = redis.createClient({
-    host: '103.207.38.200',
-    port: 6379,
-    password: 'hoanganh11k',
+    host: '127.0.0.1',
+    port: 6379
 })
 redisClient.on('error', function (err) {
     console.log('Could not establish a connection with redis. ' + err);
@@ -28,6 +27,7 @@ redisClient.on('error', function (err) {
 redisClient.on('connect', function (err) {
     console.log('Connected to redis successfully');
 });
+app.use(cookieParser())
 //Configure session middleware
 app.use(session({
     store: new RedisStore({ client: redisClient }),
@@ -38,8 +38,23 @@ app.use(session({
         secure: false, // if true only transmit cookie over https
         httpOnly: false, // if true prevent client side JS from reading the cookie 
         maxAge: 1000 * 60 * 10 // session max age in miliseconds
-    }
+    },
+    genid: function (req) {
+        return req.cookies.client_id;
+    },
 }))
+app.use(function (req, res, next) {
+    if(typeof req.cookies.client_id == 'undefined'){
+        var uniqid = Date.now() + '_' + md5(makeid(125));
+        res.cookie('client_id', uniqid, { maxAge: 365 * 24 * 60 * 60 * 1000, httpOnly: true });
+    }
+    if(req.session.id != req.cookies.client_id){
+        res.cookie('client_id', req.session.id, { maxAge: 365 * 24 * 60 * 60 * 1000, httpOnly: true });
+    }
+    next(); // <-- important!
+  });
+
+
 const APIs_KEY = 'e4611a028c71342a5b083d2cbf59c494';
 var codepin = [];
 var con = mysql.createConnection({
@@ -49,12 +64,14 @@ var con = mysql.createConnection({
     database: "user"
 });
 
-app.use(cookieParser())
+
 
 const crypto = require('crypto');
+const { compact } = require('lodash');
 const algorithm = 'aes-256-cbc';
 const key = crypto.randomBytes(32);
 const iv = crypto.randomBytes(16);
+
 
 
 
@@ -78,6 +95,10 @@ var transporter = nodemailer.createTransport(smtpTransport({
     }
 }));
 
+app.get('/', (req, res, next) => {
+    console.log(req.session.id)
+    res.send(data_json_endcode(true,'Tạo Cokiee App thành công'));
+});
 
 
 //1.Thêm user trên app người dùng
@@ -193,6 +214,7 @@ app.get('/api/user/loginUser', function (request, response) {
 app.get('/api/user/logout', function (request, response) {
     if (request.session.loggedin) {
         request.session.destroy();
+        response.clearCookie("login_id");
         console.log(request.ip + ' : Logout success!!!')
         response.send(data_json_endcode(null, 'Đăng xuất thành công!!'));
     } else {
@@ -437,4 +459,14 @@ function decrypt(text) {
     let decrypted = decipher.update(encryptedText);
     decrypted = Buffer.concat([decrypted, decipher.final()]);
     return decrypted.toString();
+}
+function makeid(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() *
+            charactersLength));
+    }
+    return result;
 }

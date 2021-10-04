@@ -2,8 +2,9 @@ var mysql = require('mysql');
 
 var dbConn = mysql.createConnection({
     host: 'localhost',
-    user: 'root',
-    password: '',
+    port:3308,
+    user: "root",
+    password: "CANsa123***",
     database: 'image'
 });
 dbConn.connect();

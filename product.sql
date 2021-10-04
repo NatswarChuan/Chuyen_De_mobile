@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1:3306
--- Thời gian đã tạo: Th9 24, 2021 lúc 04:51 PM
+-- Thời gian đã tạo: Th10 04, 2021 lúc 04:38 AM
 -- Phiên bản máy phục vụ: 8.0.21
 -- Phiên bản PHP: 7.3.21
 
@@ -30,21 +30,26 @@ SET time_zone = "+00:00";
 DROP TABLE IF EXISTS `category`;
 CREATE TABLE IF NOT EXISTS `category` (
   `category_id` int NOT NULL AUTO_INCREMENT,
-  `category_image` int NOT NULL DEFAULT '1',
+  `category_image` varchar(249) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1',
   `category_view` int NOT NULL DEFAULT '0',
   `category_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category_category` int DEFAULT NULL,
   `last_update` int NOT NULL DEFAULT '0',
   `status` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`category_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `category`
 --
 
-INSERT INTO `category` (`category_id`, `category_image`, `category_view`, `category_name`, `last_update`, `status`) VALUES
-(1, 1, 0, 'Ốp lưng REAL', 0, 1),
-(2, 1, 0, 'Ốp lưng FAKE', 0, 1);
+INSERT INTO `category` (`category_id`, `category_image`, `category_view`, `category_name`, `category_category`, `last_update`, `status`) VALUES
+(1, '7401633320689314', 0, 'Ốp lưng REAL', 3, 0, 1),
+(2, '7401633320689314', 0, 'Ốp lưng FAKE', 3, 0, 1),
+(3, '7401633320689314', 0, 'Ốp lưng', NULL, 0, 1),
+(4, '7401633320689314', 0, 'a', NULL, 0, 1),
+(5, '7401633320689314', 0, 'b', 4, 0, 1),
+(6, '7401633320689314', 0, 'c', 4, 0, 1);
 
 -- --------------------------------------------------------
 
@@ -84,7 +89,7 @@ CREATE TABLE IF NOT EXISTS `comment` (
   `comment_content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `product_id` int NOT NULL,
   PRIMARY KEY (`comment_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `comment`
@@ -114,7 +119,8 @@ INSERT INTO `comment` (`comment_id`, `user_id`, `comment_rating`, `comment_date`
 (21, 1, 5, '2021-09-22 08:12:00', 'thêm comment', 2),
 (22, 1, 5, '2021-09-22 08:12:02', 'thêm comment', 2),
 (23, 1, 5, '2021-09-22 08:12:21', 'thêm comment', 2),
-(24, 1, 5, '2021-09-22 08:12:47', 'thêm comment', 2);
+(24, 1, 5, '2021-09-22 08:12:47', 'thêm comment', 2),
+(25, 1, 5, '2021-09-27 15:37:34', 'thêm comment cc', 2);
 
 -- --------------------------------------------------------
 
@@ -155,7 +161,7 @@ CREATE TABLE IF NOT EXISTS `product` (
   `product_id` int NOT NULL AUTO_INCREMENT,
   `product_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `shop_id` int NOT NULL,
-  `product_avatar` int NOT NULL,
+  `product_avatar` varchar(249) COLLATE utf8mb4_unicode_ci NOT NULL,
   `product_quantity` int DEFAULT NULL,
   `product_view` double NOT NULL DEFAULT '0',
   `product_price` double NOT NULL,
@@ -166,17 +172,18 @@ CREATE TABLE IF NOT EXISTS `product` (
   `last_update` int NOT NULL DEFAULT '0',
   `status` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`product_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `product`
 --
 
 INSERT INTO `product` (`product_id`, `product_date`, `shop_id`, `product_avatar`, `product_quantity`, `product_view`, `product_price`, `product_sale`, `product_title`, `product_image`, `product_description`, `last_update`, `status`) VALUES
-(1, '2021-09-24 08:10:19', 1, 4, NULL, 1, 50000, 50, 'Ốp lưng Iphone 14', '1,2,3', 'Cái này là ốp lưng', 0, 1),
-(2, '2021-09-24 08:10:19', 1, 8, 100, 3, 50000, 0, 'Ốp lưng Iphone 15', '5,6,7', 'Cái này là ốp lưng', 0, 1),
-(3, '2021-09-24 08:10:19', 2, 12, NULL, 0, 50000, 0, 'Ốp lưng Iphone 16', '9,10,11', 'Cái này là ốp lưng', 0, 1),
-(4, '2021-09-24 08:10:19', 2, 16, 100, 0, 50000, 0, 'Ốp lưng Iphone 17', '13,14,15', 'Cái này là ốp lưng', 0, 1);
+(1, '2021-09-24 08:10:19', 1, '7251633320683170', NULL, 1, 50000, 50, 'Ốp lưng Iphone 14', '7401633320689314,7251633320683170,9191633320677214,7841633320674058,3071633320399941', 'Cái này là ốp lưng', 0, 1),
+(2, '2021-09-24 08:10:19', 1, '9191633320677214', 100, 3, 50000, 0, 'Ốp lưng Iphone 15', '7401633320689314,7251633320683170,9191633320677214,7841633320674058,3071633320399941', 'Cái này là ốp lưng', 0, 1),
+(3, '2021-09-24 08:10:19', 2, '7841633320674058', NULL, 0, 50000, 0, 'Ốp lưng Iphone 16', '7401633320689314,7251633320683170,9191633320677214,7841633320674058,3071633320399941', 'Cái này là ốp lưng', 0, 1),
+(4, '2021-09-24 08:10:19', 2, '3071633320399941', 100, 0, 50000, 0, 'Ốp lưng Iphone 17', '7401633320689314,7251633320683170,9191633320677214,7841633320674058,3071633320399941', 'Cái này là ốp lưng', 0, 1),
+(9, '2021-09-28 00:17:42', 1, '7401633320689314', NULL, 0, 1, 0, 'ádasdas', '7401633320689314,7251633320683170,9191633320677214,7841633320674058,3071633320399941', 'ádasdasdasd', 0, 1);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

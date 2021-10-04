@@ -18,16 +18,21 @@ app.get('/', function (req, res) {
     return res.send({ error: true, message: 'hello' })
 });
 
-app.use('/api/product',productRouter);
+app.use('/api/product', productRouter);
 
-app.use('/api/category',categoryRouter);
+app.use('/api/category', categoryRouter);
 
-app.use('/api/comment',commentRouter);
+app.use('/api/comment', commentRouter);
 
-app.use('/api/complaint',complaintRouter);
+app.use('/api/complaint', complaintRouter);
 
 app.listen(3001, function () {
-    console.log('Product service port 3001');
+    setInterval(function () {
+        dbConn.query('SELECT * FROM `product`', function (error, results, fields) {
+            if (error) throw error;
+            console.log('Product service port 3001');
+        });
+    }, 300000);
 });
 
 module.exports = app;

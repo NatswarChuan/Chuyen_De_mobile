@@ -1,6 +1,7 @@
 require('dotenv').config();
 var express = require('express');
 var bodyParser = require('body-parser');
+var dbConn = require('./app/config/Db/config');
 const cookieParser = require('cookie-parser')
 var app = express();
 app.use(cookieParser());

@@ -1,11 +1,21 @@
+const fs = require('fs');
 const express = require('express');
 const router = express.Router();
-var dbConn = require('../config/Db/config'); 
+var root = require('../config/Db/root');
+var dbConn = require('../config/Db/config');
+const multer = require('multer')
+const upload = multer({
+    limits: {
+        fileSize: 4 * 1024 * 1024,
+    }
+});
+const path = require('path');
+const sharp = require('sharp');
 
 /**
  * Trả về đường dẫn hình ảnh
  */
-router.get('/get/:image_id/:key',async (req, res)=>{
+router.get('/get/:image_id/:key', async (req, res) => {
     let id = req.params.image_id;
     let key = req.params.key;
     if (key == process.env.KEY) {
@@ -15,7 +25,8 @@ router.get('/get/:image_id/:key',async (req, res)=>{
                 return res.send({ status: "fail", message: 'không có hình' });
             }
             else {
-                let img = process.env.URL_IMG + results[0].image_name;
+                let img = process.env.BASE_URL + '/api/image/photo/' + results[0].image_name + '/' + process.env.KEY;
+                // let img = process.env.URL_IMG + results[0].image_name;
                 return res.send({ status: "success", data: img, message: 'hình có id=' + id });
             }
         });
@@ -25,4 +36,100 @@ router.get('/get/:image_id/:key',async (req, res)=>{
     }
 });
 
+//Lưu hình
+router.post("/save/:key", upload.single('file'), async function (req, res) {
+    let key = req.params.key;
+    if (key == process.env.KEY) {
+        const imagePath = path.join(root, '/public/images');
+        const fileUpload = new Resize(imagePath);
+        const fileName = `${Math.floor(Math.random() * 1000)}${Number(Date.now())}`;
+
+        if (!req.file) {
+            res.status(401).json({ error: 'Please provide an image' });
+        }
+        const filename = await fileUpload.save(req.file.buffer, fileName);
+
+        dbConn.query('INSERT INTO `image`(`image_id`, `image_name`) VALUES (?, ?)', [fileName, filename], function (error, results, fields) {
+            if (error) throw error;
+            return res.send({ status: "success", data: { image_id: fileName }, message: 'hình có id=' + fileName });
+        });
+    }
+    else {
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
+    }
+}
+);
+
+//Trả về hình ảnh
+router.get('/photo/:photo/:key', function (req, res) {
+    let key = req.params.key;
+    if (key == process.env.KEY) {
+        let photo = req.params.photo;
+        res.sendFile(`${root}/public/images/${photo}`);
+    }
+    else {
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
+    }
+});
+
+//Xóa hình
+router.get('/remove/:photo/:key', function (req, res) {
+    let key = req.params.key;
+    let photo = req.params.photo;
+    if (key == process.env.KEY) {
+        const imagePath = path.join(root, '/public/images');
+        const imageLink = imagePath + '/' + photo;
+        fs.unlink(imageLink, (err) => {
+            if (err) throw err;
+            return res.send({ status: "success", message: 'xóa hình thành công' });
+        });
+    }
+    else {
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
+    }
+});
+
+//sửa hình
+router.post("/update/:image_id/:key", upload.single('file'), async function (req, res) {
+    let key = req.params.key;
+    let id = req.params.image_id;
+    if (key == process.env.KEY) {
+        const imagePath = path.join(root, '/public/images');
+        const imageLink = imagePath + '/' + id + '.png';
+        fs.unlink(imageLink, (err) => {
+            if (err) throw err;
+
+        });
+        const fileUpload = new Resize(imagePath);
+
+        if (!req.file) {
+            res.status(401).json({ error: 'Please provide an image' });
+        }
+        const filename = await fileUpload.save(req.file.buffer, id);
+
+        return res.send({ status: "success", data: { image_id: id }, message: 'hình có id=' + id });
+    }
+    else {
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
+    }
+}
+);
+
+class Resize {
+    constructor(folder) {
+        this.folder = folder;
+    }
+    async save(buffer, fileName) {
+        const filename = fileName + '.png';
+        const filepath = this.filepath(filename);
+
+        await sharp(buffer).toFile(filepath);
+
+        return filename;
+    }
+
+    filepath(filename) {
+        return path.resolve(`${this.folder}/${filename}`)
+    }
+}
 module.exports = router;

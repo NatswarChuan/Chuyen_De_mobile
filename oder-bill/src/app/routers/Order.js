@@ -50,7 +50,7 @@ router.get('/all/:user_id/:option/:key', async (req, res) => {
                             let i = 0;
                             let product = [];
                             results.map((item) => {
-                                axios.get(process.env.PRODUCT_URL + `/api/product/get/` + item.product_id + `/` + option + `/` + req.params.key)
+                                axios.get(process.env.PRODUCT_URL + `/api/product/get/` + item.product_id + `/` + 1 + `/` + req.params.key)
                                     .then(res => {
                                         const { data } = res.data;
                                         results[i].product = data
@@ -64,6 +64,7 @@ router.get('/all/:user_id/:option/:key', async (req, res) => {
                                             product_temp.product_oder = product;
                                             result.push(product_temp);
                                             n++;
+                                            console.log(results[i]);
                                             if (n == end) {
                                                 return res.send({ status: "success", data: result, message: 'tất cả đơn hàng đã đặt' });
                                             }

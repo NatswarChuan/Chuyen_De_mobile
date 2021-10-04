@@ -1,6 +1,7 @@
 require('dotenv').config();
 var express = require('express');
 var bodyParser = require('body-parser');
+var dbConn = require('./app/config/Db/config');
 const cookieParser = require('cookie-parser')
 var app = express();
 app.use(cookieParser());
@@ -16,11 +17,16 @@ app.get('/', function (req, res) {
     return res.send({ error: true, message: 'hello' })
 });
 
-app.use('/api/oder',oderRouter);
-app.use('/api/cart',cartRouter);
+app.use('/api/oder', oderRouter);
+app.use('/api/cart', cartRouter);
 
 app.listen(3004, function () {
-    console.log('Oder service port 3004');
+    setInterval(function () {
+        dbConn.query('SELECT * FROM `image`', function (error, results, fields) {
+            if (error) throw error;
+            console.log('Oder service port 3004');
+        });
+    }, 300000);
 });
 
 module.exports = app;

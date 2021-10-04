@@ -14,10 +14,15 @@ app.get('/', function (req, res) {
     return res.send({ error: true, message: 'hello' })
 });
 
-app.use('/api/shop',shopRouter);
+app.use('/api/shop', shopRouter);
 
 app.listen(3003, function () {
-    console.log('Shop service port 3003');
+    setInterval(function () {
+        dbConn.query('SELECT * FROM `shop`', function (error, results, fields) {
+            if (error) throw error;
+            console.log('Shop service port 3003');
+        });
+    }, 300000);
 });
 
 module.exports = app;

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1:3306
--- Thời gian đã tạo: Th9 24, 2021 lúc 04:52 PM
+-- Thời gian đã tạo: Th10 04, 2021 lúc 04:48 AM
 -- Phiên bản máy phục vụ: 8.0.21
 -- Phiên bản PHP: 7.3.21
 
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `shop` (
   `shop_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `shop_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `shop_owner` int NOT NULL,
-  `shop_avatar` int NOT NULL,
+  `shop_avatar` varchar(249) COLLATE utf8mb4_unicode_ci NOT NULL,
   `last_update` int NOT NULL DEFAULT '0',
   `status` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`shop_id`)
@@ -69,8 +69,8 @@ CREATE TABLE IF NOT EXISTS `shop` (
 --
 
 INSERT INTO `shop` (`shop_id`, `shop_name`, `shop_description`, `shop_owner`, `shop_avatar`, `last_update`, `status`) VALUES
-(1, 'Cansa-shop', 'shop này chuyên bán cần sa', 1, 17, 0, 1),
-(2, 'Kush-shop', 'Deal Cam Kush các loại', 2, 18, 0, 1);
+(1, 'Cansa-shop', 'shop này chuyên bán cần sa', 1, '7841633320674058', 0, 1),
+(2, 'Kush-shop', 'Deal Cam Kush các loại', 2, '3071633320399941', 0, 1);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

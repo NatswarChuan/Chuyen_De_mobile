@@ -11,7 +11,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 var oderRouter = require('./app/routers/Order');
 var cartRouter = require('./app/routers/Cart');
 
-app.set('port', process.env.PORT || 3004);
+app.set('port', process.env.PORT);
 
 app.get('/', function (req, res) {
     return res.send({ error: true, message: 'hello' })

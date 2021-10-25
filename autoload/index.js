@@ -14,7 +14,19 @@ server.listen(3102, () => {
     console.log('Listen on port ' + 3102 + '...')
 
 });
+const cors = require("cors");
 
+app.use(
+    cors({
+        origin: "*",
+    })
+);
+
+
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    next();
+});
 // TODO: Update this list with your proxies or virtual machines.
 const proxies = [
     httpProxy('52.187.10.119:3301'),

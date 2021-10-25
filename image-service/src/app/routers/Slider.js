@@ -11,26 +11,24 @@ router.get('/all/:key', async (req, res) => {
     let key = req.params.key;
     if (key == process.env.KEY) {
         dbConn.query('SELECT * FROM `slider`', function (error, results, fields) {
-            if (error) throw error;
+            if (error) return res.send({ status: "fail", message: error });
             if (results == null || results.length === 0) {
                 return res.send({ status: "fail", message: 'không có sản phẩm trong cơ sở dữ liệu' });
             }
             else {
-                let i = 0;
-                results.map(item => {
-                    axios.get(process.env.BASE_URL + `/api/image/get/` + item.slider_image + `/` + req.params.key)
-                        .then(res => {
-                            const { data } = res.data;
-                            results[i].slider_image = data;
-                        })
-                        .catch(error => console.log(error))
-                        .finally(() => {
-                            i++;
-                            if (i === results.length) {
-                                return res.send({ status: "success", data: results, message: 'tất cả hình ảnh trong silder' });
-                            }
-                        });
-                });
+                let arr = []
+                for (let i = 0; i < results.length; i++) {
+                   arr.push(dbConn.query('SELECT `image_name` FROM `image` WHERE `image_id` = ?', results[i].slider_image, function (error, results, fields) {
+                        if (error) return res.send({ status: "fail", message: error });
+                        if (!(results == null || results.length === 0)) {
+                            let img = process.env.BASE_URL + '/api/image/photo/' + id + '/' + process.env.KEY;
+                            results[i].slider_image = img;
+                        }
+                    }));
+                }
+                Promise.all([...arr]).then(() => {
+                    return res.send({ status: "success", data: results, message: 'tất cả hình ảnh trong silder' });
+                })
             }
         });
     }

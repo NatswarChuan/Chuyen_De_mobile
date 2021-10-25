@@ -13,7 +13,7 @@ var categoryRouter = require('./app/routers/Category');
 var commentRouter = require('./app/routers/Comment');
 var complaintRouter = require('./app/routers/Complaint');
 
-app.set('port', process.env.PORT || 3001);
+app.set('port', process.env.PORT);
 
 app.get('/', function (req, res) {
     return res.send({ error: true, message: 'hello' })
@@ -28,11 +28,11 @@ app.use('/api/comment', commentRouter);
 app.use('/api/complaint', complaintRouter);
 
 app.listen(3001, function () {
-    console.log('Product service port 3001');
+    console.log('Product service port ' + process.env.PORT);
     setInterval(function () {
         dbConn.query('SELECT version()', function (error, results, fields) {
             if (error) throw error;
-            console.log('Product service port 3001');
+            console.log('Product service port ' + process.env.PORT);
         });
     }, 300000);
 });

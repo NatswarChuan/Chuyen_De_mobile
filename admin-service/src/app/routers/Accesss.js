@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 var dbConn = require('../config/Db/config');
-var productModel = require('../Model/ProductModel');
 const axios = require('axios');
 
 /**
@@ -16,7 +15,7 @@ router.get('/update/:key', async (req, res) => {
         }
         else {
             dbConn.query('SELECT * FROM `access` ORDER BY `access`.`id` DESC', function (error, results, fields) {
-                if (error) throw error;
+                if (error) return res.send({ status: "fail", message: error });
                 const access = results[0];
                 const now = new Date(Date.now());
                 const year = now.getFullYear();
@@ -31,7 +30,7 @@ router.get('/update/:key', async (req, res) => {
                 }
                 dbConn.query(sql, [year, month, season], function (error, results, fields) {
                     if (error) throw error;
-                    res.cookie('access', 'access', { expires: new Date(Date.now() + 86400000)});
+                    res.cookie('access', 'access', { expires: new Date(Date.now() + 86400000), secure: true, sameSite: 'none' });
                     return res.send({ status: "success", message: 'cập nhật thành công' });
                 })
             });

@@ -12,40 +12,47 @@ router.get('/all/:product_id/:key', async (req, res) => {
     if (key == process.env.KEY) {
 
         dbConn.query('SELECT * FROM `comment` WHERE `product_id` = ? ORDER BY `comment`.`comment_id` DESC', id, function (error, results, fields) {
-            if (error) throw error;
+            if (error) return res.send({ status: "fail", message: `error ${error}` });
             if (results == null || results.length === 0) {
                 return res.send({ status: "fail", message: 'không có bình luận của sản phẩm có id=' + id });
             }
             else {
-                let i = 0;
-                results.map(comment => {
-
-                    let user;
-                    axios.get(process.env.USER_URL + `/api/user/get/user/by/` + comment.user_id)
-                        .then(res => {
-                            const { data } = res.data;
-                            user = data;
-                        })
-                        .catch(error => console.log(error))
-                        .finally(() => {
-                            axios.get(process.env.IMG_URL + `/api/image/get/` + user.user_avatar + `/` + req.params.key)
+                (
+                    async () => {
+                        let user_comments = [];
+                        let user;
+                        for (let i = 0; i < results.length; i++) {
+                            user_comments.push(axios.get(process.env.USER_URL + `/api/user/get/user/by/` + results[i].user_id)
                                 .then(res => {
                                     const { data } = res.data;
-                                    user.user_avatar = data;
-                                })
-                                .catch(error => console.log(error))
-                                .finally(() => {
-                                    delete comment["user_id"];
-                                    comment.user = user;
-                                    i++;
-                                    if (i === results.length) {
-                                        return res.send({ status: "success", data: results, message: 'comment của sản phẩm có id=' + id });
-                                    }
-                                });
-                        });
+                                    user = data;
+                                    results[i].user = user;
+                                }))
+                        }
+                        await Promise.all([...user_comments]).then(() => {
+                            let user_list = [];
+                            for (let i = 0; i < results.length; i++) {
+                                user_list.push(
+                                    axios.get(process.env.IMG_URL + `/api/image/get/` + results[i].user.user_avatar + `/` + req.params.key)
+                                        .then(res => {
+                                            const { data } = res.data;  
+                                            let user = results[i].user;
+                                            user.user_avatar = data;
+                                            delete results[i]["user_id"];
+                                            results[i].user = user;
+                                        })
+                                        .catch(error => { return res.send({ status: "fail", message: `error ${error}` }) })
+                                )
+                            }
 
-                })
+                             Promise.all([...user_list]).then(() => {
+                                results.sort((a, b) => a.comment_id !== b.comment_id ? a.comment_id < b.comment_id ? -1 : 1 : 0)
+                                return res.send({ status: "success", data: results, message: 'comment của sản phẩm có id=' + id });
+                            })
 
+                        })
+                    }
+                )()
             }
         });
     }
@@ -67,12 +74,55 @@ router.post('/insert/:key', async (req, res) => {
 
         dbConn.query('INSERT INTO `comment`( `user_id`, `comment_rating`, `comment_content`, `product_id`) VALUES (?, ?, ?, ?)',
             [userId, comment_rating, comment_content, product_id], function (error, results, fields) {
-                if (error) throw error;
-                axios.get(process.env.BASE_URL + `/api/comment/all/` + product_id + `/` + req.params.key)
-                    .then(response => {
-                        const { data } = response.data;
-                        return res.send({ status: "success", data: data, message: 'thêm comment của user_id=' + userId + ' vào product_id=' + product_id + ' thành công!' });
-                    })
+                if (error) return res.send({ status: "fail", message: error });
+                dbConn.query('SELECT * FROM `comment` WHERE `product_id` = ? ORDER BY `comment`.`comment_id` DESC', product_id, function (error, results, fields) {
+                    if (error) return res.send({ status: "fail", message: `error ${error}` });
+                    if (results == null || results.length === 0) {
+                        return res.send({ status: "fail", message: 'không có bình luận của sản phẩm có id=' + product_id });
+                    }
+                    else {
+                        (
+                            async () => {
+                                let user_comments = [];
+                                let user;
+                                for (let i = 0; i < results.length; i++) {
+                                    user_comments.push(axios.get(process.env.USER_URL + `/api/user/get/user/by/` + results[i].user_id)
+                                        .then(res => {
+                                            const { data } = res.data;
+                                            user = data;
+                                            results[i].user = user;
+                                        }))
+                                }
+                                await Promise.all([...user_comments]).then(() => {
+                                    (
+                                        async () => {
+                                            let user_list = [];
+                                            for (let i = 0; i < results.length; i++) {
+                                                user_list.push(
+                                                    axios.get(process.env.IMG_URL + `/api/image/get/` + results[i].user.user_avatar + `/` + req.params.key)
+                                                        .then(res => {
+                                                            const { data } = res.data;
+                                                            let user = results[i].user;
+                                                            user.user_avatar = data;
+                                                            delete results[i]["user_id"];
+                                                            results[i].user = user;
+                                                        })
+                                                        .catch(error => { return res.send({ status: "fail", message: `error ${error}` }) })
+                                                )
+                                            }
+
+                                            await Promise.all([...user_list]).then(() => {
+                                                results.sort((a, b) => a.comment_id !== b.comment_id ? a.comment_id < b.comment_id ? -1 : 1 : 0)
+                                                return res.send({ status: "success", data: results, message: 'comment của sản phẩm có id=' + product_id });
+                                            })
+                                        }
+                                    )()
+
+                                })
+                            }
+                        )()
+                    }
+                });
             });
     }
     else {

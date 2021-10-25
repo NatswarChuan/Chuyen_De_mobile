@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1:3308
--- Thời gian đã tạo: Th10 13, 2021 lúc 03:57 AM
+-- Thời gian đã tạo: Th10 19, 2021 lúc 03:20 AM
 -- Phiên bản máy phục vụ: 10.6.4-MariaDB-log
 -- Phiên bản PHP: 7.3.21
 
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `api` (
   `description` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `service_id` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=93 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `api`
@@ -81,7 +81,16 @@ INSERT INTO `api` (`id`, `url`, `type`, `description`, `service_id`) VALUES
 (74, '/api/cart/all/:key', 1, 'Lấy tất cả sản phẩm trong giỏ hàng', 6),
 (76, '/api/cart/update/:product_id/:qty/:key', 1, 'cập nhật giỏ hàng', 6),
 (78, '/api/user/login/facebook/:user_permission/:api_key/:user_email/:user_name/:full_name/:key', 1, '//1.Login facebook trên app người dùng\r\n', 4),
-(80, '/api/access/update/:key', 1, 'cập nhật lượt truy cập vào App', 8);
+(80, '/api/access/update/:key', 1, 'cập nhật lượt truy cập vào App', 8),
+(81, '/api/product/insert/:shop_id/:key', 0, 'thêm sản phẩm', 2),
+(82, '/api/product/delete/:shop_id/:key', 0, 'xóa sản phẩm', 2),
+(83, '/api/product/update/:shop_id/:key', 0, 'sửa sản phẩm', 2),
+(84, '/api/oder/change_product/:key', 0, 'Cập nhật trạng thái sản phẩm trong giỏ hàng giỏ hàng', 6),
+(85, '/api/oder/get/:oder_id/:key', 0, 'Lấy đơn hàng theo id', 6),
+(86, '/api/oder/get_shop/:shop_id/:key', 0, 'Lấy đơn hàng theo shop id', 6),
+(88, '/api/address/city/:key', 1, 'Lấy danh sách thành phố', 10),
+(90, '/api/address/district/:id/:key', 1, 'Lấy danh sách quận huyện theo thành phố', 10),
+(92, '/api/address/ward/:id/:key', 1, 'Lấy danh sách phường xã theo quận huyện', 10);
 
 -- --------------------------------------------------------
 
@@ -95,7 +104,7 @@ CREATE TABLE IF NOT EXISTS `service` (
   `service_name` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `service_ip` text COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `service`
@@ -106,7 +115,8 @@ INSERT INTO `service` (`id`, `service_name`, `service_ip`) VALUES
 (2, 'Product', '127.0.0.1:3001'),
 (4, 'User', '127.0.0.1:3000'),
 (3, 'Shop', '127.0.0.1:3003'),
-(6, 'Oder', '127.0.0.1:3004');
+(6, 'Oder', '127.0.0.1:3004'),
+(10, 'Address', '127.0.0.1:3006');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

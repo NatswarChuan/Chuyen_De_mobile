@@ -1,12 +1,11 @@
 const fs = require('fs');
 const express = require('express');
 const router = express.Router();
-var root = require('../config/Db/root');
 var dbConn = require('../config/Db/config');
 const multer = require('multer')
 const upload = multer({
     limits: {
-        fileSize: 100 * 1024 * 1024,
+        fileSize: Infinity,
     }
 });
 const path = require('path');
@@ -20,12 +19,12 @@ router.get('/get/:image_id/:key', async (req, res) => {
     let key = req.params.key;
     if (key == process.env.KEY) {
         dbConn.query('SELECT `image_name` FROM `image` WHERE `image_id` = ?', id, function (error, results, fields) {
-            if (error) throw error;
+            if (error) return res.send({ status: "fail", message: error });
             if (results == null || results.length === 0) {
                 return res.send({ status: "fail", message: 'không có hình' });
             }
             else {
-                let img = process.env.BASE_SERVER + '/api/image/photo/' + results[0].image_name + '/' + process.env.KEY;
+                let img = process.env.BASE_URL + '/api/image/photo/' + id + '/' + process.env.KEY;
                 return res.send({ status: "success", data: img, message: 'hình có id=' + id });
             }
         });
@@ -39,19 +38,27 @@ router.get('/get/:image_id/:key', async (req, res) => {
 router.post("/save/:key", upload.single('file'), async function (req, res) {
     let key = req.params.key;
     if (key == process.env.KEY) {
-        const imagePath = `C:/wamp64/www/upload/`;
+        const imagePath = process.env.IMG_DIR;
         const fileUpload = new Resize(imagePath);
         const fileName = `${Math.floor(Math.random() * 1000)}${Number(Date.now())}`;
+
 
         if (!req.file) {
             res.status(401).json({ error: 'Please provide an image' });
         }
         const filename = await fileUpload.save(req.file.buffer, fileName);
 
-        dbConn.query('INSERT INTO `image`(`image_id`, `image_name`) VALUES (?, ?)', [fileName, filename], function (error, results, fields) {
-            if (error) throw error;
-            return res.send({ status: "success", data: { image_id: fileName }, message: 'hình có id=' + fileName });
-        });
+        req.body.image_title ?
+            dbConn.query('INSERT INTO `image`(`image_name`,`image_title`) VALUES (?,?)', [filename, req.body.image_title], function (error, results, fields) {
+                if (error) return res.send({ status: "fail", message: error });
+                const img_id = results.insertId;
+                return res.send({ status: "success", data: { image_id: img_id }, message: 'hình có id=' + img_id });
+            }) :
+            dbConn.query('INSERT INTO `image`(`image_name`) VALUES (?)', [filename], function (error, results, fields) {
+                if (error) return res.send({ status: "fail", message: error });
+                const img_id = results.insertId;
+                return res.send({ status: "success", data: { image_id: img_id }, message: 'hình có id=' + img_id });
+            })
     }
     else {
         return res.send({ status: "fail", message: 'key không hợp lệ' });
@@ -60,11 +67,13 @@ router.post("/save/:key", upload.single('file'), async function (req, res) {
 );
 
 //Trả về hình ảnh
-router.get('/photo/:photo/:key', function (req, res) {
+router.get('/photo/:image_id/:key', function (req, res) {
     let key = req.params.key;
     if (key == process.env.KEY) {
-        let photo = req.params.photo;
-        res.sendFile(`C:/wamp64/www/upload/` + photo);
+        dbConn.query('SELECT * FROM `image` WHERE `image`.`image_id` = ?', [req.params.image_id], function (error, results, fields) {
+            if (error) return res.send({ status: "fail", message: error });
+            res.sendFile(process.env.IMG_DIR + results[0].image_name);
+        })
     }
     else {
         return res.send({ status: "fail", message: 'key không hợp lệ' });
@@ -72,15 +81,21 @@ router.get('/photo/:photo/:key', function (req, res) {
 });
 
 //Xóa hình
-router.get('/remove/:photo/:key', function (req, res) {
+router.get('/remove/:image_id/:key', function (req, res) {
     let key = req.params.key;
-    let photo = req.params.photo;
     if (key == process.env.KEY) {
-        const imageLink = `C:/wamp64/www/upload/` + photo;
-        fs.unlink(imageLink, (err) => {
-            if (err) throw err;
-            return res.send({ status: "success", message: 'xóa hình thành công' });
-        });
+        dbConn.query('SELECT * FROM `image` WHERE `image`.`image_id` = ?', [req.params.image_id], function (error, results, fields) {
+            if (error) return res.send({ status: "fail", message: error });
+            const imageLink = process.env.IMG_DIR + results[0].image_name;
+            dbConn.query('DELETE FROM `image` WHERE `image`.`image_id` =  ?', [req.params.image_id], function (error, results, fields) {
+                if (error) return res.send({ status: "fail", message: error });
+                console.log(results);
+                fs.unlink(imageLink, (err) => {
+                    if (err) return res.send({ status: "fail", message: err });
+                    return res.send({ status: "success", message: 'xóa hình thành công' });
+                });
+            })
+        })
     }
     else {
         return res.send({ status: "fail", message: 'key không hợp lệ' });
@@ -90,47 +105,35 @@ router.get('/remove/:photo/:key', function (req, res) {
 //sửa hình
 router.post("/update/:image_id/:key", upload.single('file'), async function (req, res) {
     let key = req.params.key;
-    let id = req.params.image_id;
     if (key == process.env.KEY) {
-        const imageLink = `C:/wamp64/www/upload/` + '/' + id + '.png';
-        const imagePath = `C:/wamp64/www/upload/`;
-        // fs.unlink(imageLink, (err) => {
-        //     if (err) throw err;
-        //     (
-        //         async () => {
-        //             const fileUpload = new Resize(imagePath);
+        const imagePath = process.env.IMG_DIR;
+        const fileUpload = new Resize(imagePath);
+        const fileName = `${Math.floor(Math.random() * 1000)}${Number(Date.now())}`;
 
-        //             if (!req.file) {
-        //                 res.status(401).json({ error: 'Please provide an image' });
-        //             }
-        //             const filename = fileUpload.save(req.file.buffer, id);
+        if (!req.file) {
+            res.status(401).json({ error: 'Please provide an image' });
+        }
 
-        //             return res.send({ status: "success", data: { image_id: id }, message: 'hình có id=' + id });
-        //         }
-        //     )();
-        // });
-        axios.get(process.env.BASE_URL + `/api/image/remove/${id}.png/${req.params.key}`)
-            .finally(() => {
-                (
-                    async () => {
-                        const imagePath = `C:/wamp64/www/upload/`;
-                        const fileUpload = new Resize(imagePath);
-                        const fileName = `${Math.floor(Math.random() * 1000)}${Number(Date.now())}`;
-
-                        if (!req.file) {
-                            res.status(401).json({ error: 'Please provide an image' });
-                        }
-                        const filename = await fileUpload.save(req.file.buffer, fileName);
-
-                        dbConn.query('DELETE FROM `image` WHERE`image_id` = ?', id, function (error, results, fields) {
-                            if (error) throw error;
-                            dbConn.query('INSERT INTO `image`(`image_id`, `image_name`) VALUES (?, ?)', [fileName, filename], function (error, results, fields) {
-                                if (error) throw error;
-                                return res.send({ status: "success", data: { image_id: fileName }, message: 'hình có id=' + fileName });
-                            });
-                        });
-                    })()
-            });
+        const filename = await fileUpload.save(req.file.buffer, fileName);
+        dbConn.query('SELECT * FROM `image` WHERE `image`.`image_id` = ?', [req.params.image_id], function (error, results, fields) {
+            if (error) return res.send({ status: "fail", message: error });
+            const imageLink = process.env.IMG_DIR + results[0].image_name;
+            dbConn.query('DELETE FROM `image` WHERE `image`.`image_id` =  ?', [req.params.image_id], function (error, results, fields) {
+                if (error) return res.send({ status: "fail", message: error });
+                fs.unlink(imageLink, (err) => {
+                    if (err) return res.send({ status: "fail", message: err });
+                    req.body.image_title ?
+                        dbConn.query('INSERT INTO `image`(`image_name`,`image_title`) VALUES (?,?)', [filename, req.body.image_title], function (error, results, fields) {
+                            if (error) return res.send({ status: "fail", message: error });
+                            return res.send({ status: "success", data: { image_id: results.insertId }, message: 'hình có id=' + results.insertId });
+                        }) :
+                        dbConn.query('INSERT INTO `image`(`image_name`) VALUES (?)', [filename], function (error, results, fields) {
+                            if (error) return res.send({ status: "fail", message: error });
+                            return res.send({ status: "success", data: { image_id: results.insertId }, message: 'hình có id=' + results.insertId });
+                        })
+                });
+            })
+        })
     }
     else {
         return res.send({ status: "fail", message: 'key không hợp lệ' });

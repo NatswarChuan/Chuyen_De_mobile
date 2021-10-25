@@ -11,46 +11,46 @@ const port = 3000;
 var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 var md5 = require('md5');
-const redis = require('redis');
-const connectRedis = require('connect-redis');
-// enable this if you run behind a proxy (e.g. nginx)
-const RedisStore = connectRedis(session)
-//Configure redis client
-const redisClient = redis.createClient({
-    host: '127.0.0.1',
-    port: 6379,
-    password: 'hoanganh11k'
-})
-redisClient.on('error', function (err) {
-    console.log('Could not establish a connection with redis. ' + err);
-});
-redisClient.on('connect', function (err) {
-    console.log('Connected to redis successfully');
-});
-app.use(cookieParser())
-//Configure session middleware
-app.use(session({
-    store: new RedisStore({ client: redisClient,collection: 'sessions' }),
-    secret: 'secret$%^134',
-    resave: true,
-    saveUninitialized: true,
-    name: 'hoanganh11k', 
-    cookie: {
-        secure: false, // if true only transmit cookie over https
-        httpOnly: false, // if true prevent client side JS from reading the cookie 
-        maxAge: 1000 * 60 * 10 // session max age in miliseconds
-    },
-}))
-app.use(function (req, res, next) {
-    if (typeof req.cookies.client_id == 'undefined') {
-        var uniqid = Date.now() + '_' + md5(makeid(125));
-        res.cookie('client_id', uniqid, { maxAge: 365 * 24 * 60 * 60 * 1000, httpOnly: true });
-    }
-    if (req.session.id != req.cookies.client_id) {
-        res.cookie('client_id', req.session.id, { maxAge: 365 * 24 * 60 * 60 * 1000, httpOnly: true });
-    }
-    next(); // <-- important!
-});
+// const redis = require('redis');
+// const connectRedis = require('connect-redis');
+// // enable this if you run behind a proxy (e.g. nginx)
+// const RedisStore = connectRedis(session)
+// //Configure redis client
+// const redisClient = redis.createClient({
+//     host: '127.0.0.1',
+//     port: 6379,
+//     password: 'hoanganh11k'
+// })
+// redisClient.on('error', function (err) {
+//     console.log('Could not establish a connection with redis. ' + err);
+// });
+// redisClient.on('connect', function (err) {
+//     console.log('Connected to redis successfully');
+// });
+// app.use(cookieParser())
+// //Configure session middleware
+// app.use(session({
+//     store: new RedisStore({ client: redisClient,collection: 'sessions' }),
+//     secret: 'secret$%^134',
+//     resave: true,
+//     saveUninitialized: true,
+//     name: 'hoanganh11k', 
+//     cookie: {
+//         secure: false, // if true only transmit cookie over https
+//         httpOnly: false, // if true prevent client side JS from reading the cookie 
+//         maxAge: 1000 * 60 * 10 // session max age in miliseconds
+//     },
+// }))
+// app.use(function (req, res, next) {
+//     if (typeof req.cookies.client_id == 'undefined') {
+//         var uniqid = Date.now() + '_' + md5(makeid(125));
+//         res.cookie('client_id', uniqid, { maxAge: 365 * 24 * 60 * 60 * 1000, httpOnly: true });
+//     }
+//     if (req.session.id != req.cookies.client_id) {
+//         res.cookie('client_id', req.session.id, { maxAge: 365 * 24 * 60 * 60 * 1000, httpOnly: true });
+//     }
+//     next(); // <-- important!
+// });
 
 
 const APIs_KEY = 'e4611a028c71342a5b083d2cbf59c494';
@@ -351,48 +351,48 @@ app.get('/api/user/update/profile/:profile_name/:profile_phone/:profile_birthday
 });
 
 //Hàm đặt lại mật khẩu gửi mail code
-app.get('/api/user/forgot/password/:email', function (request, response) {
-    var email = request.params.email;
-    var codePinTemp = Math.random().toString().substr(2, 6);
+// app.get('/api/user/forgot/password/:email', function (request, response) {
+//     var email = request.params.email;
+//     var codePinTemp = Math.random().toString().substr(2, 6);
 
-    var mailOptions = {
-        from: email,
-        to: email,
-        subject: 'Quên mật khẩu Code Pin :' + codePinTemp,
-        text: 'Mã code chỉ có hiệu lực trong 1 phút \n Code pin: ' + codePinTemp
-    };
+//     var mailOptions = {
+//         from: email,
+//         to: email,
+//         subject: 'Quên mật khẩu Code Pin :' + codePinTemp,
+//         text: 'Mã code chỉ có hiệu lực trong 1 phút \n Code pin: ' + codePinTemp
+//     };
 
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            console.log(error);
-            response.send(error_Print(556, 'Vui lòng kiểm tra lại email!!'))
-        } else {
-            redisClient.rpush('codePin2', JSON.stringify({ 'email': email, 'codePin': codePinTemp }))
-            setTimeout(function () {
-                redisClient.lrem('codePin2', 0, JSON.stringify({ 'email': email, 'codePin': codePinTemp }), function (err, data) {
-                });
-            }, 60000);
-            console.log('Email sent: ' + info.response);
-            response.send(data_json_endcode(null, 'Vui lòng check mail!!'))
-        }
-    });
-});
+//     transporter.sendMail(mailOptions, function (error, info) {
+//         if (error) {
+//             console.log(error);
+//             response.send(error_Print(556, 'Vui lòng kiểm tra lại email!!'))
+//         } else {
+//             redisClient.rpush('codePin2', JSON.stringify({ 'email': email, 'codePin': codePinTemp }))
+//             setTimeout(function () {
+//                 redisClient.lrem('codePin2', 0, JSON.stringify({ 'email': email, 'codePin': codePinTemp }), function (err, data) {
+//                 });
+//             }, 60000);
+//             console.log('Email sent: ' + info.response);
+//             response.send(data_json_endcode(null, 'Vui lòng check mail!!'))
+//         }
+//     });
+// });
 
 //Hàm check codePin
-app.get('/api/user/forgot/password/checkPin/:email/:codePin', function (request, response) {
-    var codePinTemp = request.params.codePin;
-    var email = request.params.email
-    var dataTemp = { 'email': email, 'codePin': codePinTemp };
-    redisClient.lrange('codePin2', 0, -1, function (error, items) {
-        if (error) throw error
-        if (items.some(item => _.isEqual(JSON.parse(item), dataTemp)) == true) {
-            response.send(data_json_endcode(true, "Xác nhận thành công!!"))
-        } else {
-            response.send(data_json_endcode(false, "Mã code không hợp lệ!!"))
-        }
-    })
+// app.get('/api/user/forgot/password/checkPin/:email/:codePin', function (request, response) {
+//     var codePinTemp = request.params.codePin;
+//     var email = request.params.email
+//     var dataTemp = { 'email': email, 'codePin': codePinTemp };
+//     redisClient.lrange('codePin2', 0, -1, function (error, items) {
+//         if (error) throw error
+//         if (items.some(item => _.isEqual(JSON.parse(item), dataTemp)) == true) {
+//             response.send(data_json_endcode(true, "Xác nhận thành công!!"))
+//         } else {
+//             response.send(data_json_endcode(false, "Mã code không hợp lệ!!"))
+//         }
+//     })
 
-});
+// });
 //Hàm đổi mật khẩu
 app.get('/api/user/forgot/password/center/:email/:password', function (request, response) {
     var password = request.params.password;

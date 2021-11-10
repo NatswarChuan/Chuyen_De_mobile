@@ -21,7 +21,7 @@ app.listen(3003, function () {
     console.log('Shop service port 3003');
     setInterval(function () {
         dbConn.query('SELECT version()', function (error, results, fields) {
-            if (error) throw error;
+            if (error) console.log('Shop service port error ' + error);
             console.log('Shop service port 3003');
         });
     }, 300000);

@@ -29,7 +29,7 @@ router.get('/update/:key', async (req, res) => {
                     sql = 'INSERT INTO `access`(`year`, `month`, `season`) VALUES ( ?, ? , ?)';
                 }
                 dbConn.query(sql, [year, month, season], function (error, results, fields) {
-                    if (error) throw error;
+                    if (error) return res.send({ status: "fail", message: error });
                     res.cookie('access', 'access', { expires: new Date(Date.now() + 86400000), secure: true, sameSite: 'none' });
                     return res.send({ status: "success", message: 'cập nhật thành công' });
                 })

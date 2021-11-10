@@ -30,7 +30,7 @@ app.listen(3006, function () {
     console.log('Address service port ' + process.env.PORT);
     setInterval(function () {
         dbConn.query('SELECT version()', function (error, results, fields) {
-            if (error) throw error;
+            if (error) console.log('error ' + error);;
             console.log('Address service port ' + process.env.PORT);
         });
     }, 300000);

@@ -18,13 +18,15 @@ router.get('/all/:key', async (req, res) => {
             else {
                 let arr = []
                 for (let i = 0; i < results.length; i++) {
-                   arr.push(dbConn.query('SELECT `image_name` FROM `image` WHERE `image_id` = ?', results[i].slider_image, function (error, results, fields) {
+                    arr.push(new Promise((resolve, reject) => { 
+                        dbConn.query('SELECT * FROM `image` WHERE `image_id` = ?', results[i].slider_image, function (error, result, fields) {
                         if (error) return res.send({ status: "fail", message: error });
-                        if (!(results == null || results.length === 0)) {
-                            let img = process.env.BASE_URL + '/api/image/photo/' + id + '/' + process.env.KEY;
+                        if (result.length > 0) {
+                            let img = process.env.BASE_SERVER + '/api/image/photo/' + result[0].image_id + '/' + process.env.KEY;
                             results[i].slider_image = img;
                         }
-                    }));
+                        resolve();
+                    })}));
                 }
                 Promise.all([...arr]).then(() => {
                     return res.send({ status: "success", data: results, message: 'tất cả hình ảnh trong silder' });

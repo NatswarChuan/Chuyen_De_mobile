@@ -12,7 +12,6 @@ router.get('/all/:option/:key', async (req, res) => {
     let id = req.params.product_id;
     let key = req.params.key;
     let option = req.params.option;
-    console.log(key, process.env.KEY);
     if (key == process.env.KEY) {
         let sql = '';
         switch (option) {
@@ -82,20 +81,37 @@ router.get('/get/:category_id/:option/:key', async (req, res) => {
     let key = req.params.key;
     let option = req.params.option;
     if (key == process.env.KEY) {
+        let sort = '';
+        if (req.query.sort) {
+            switch (req.query.sort) {
+                case 'desc':
+                    sort = '`product`.`product_title` DESC,'
+                    break;
+                case 'asc':
+                    sort = '`product`.`product_title` ASC,'
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        let filter = '';
+        if (req.query.begin && req.query.end) {
+            filter = 'AND `product`.`product_price` <= ' + req.query.end + ' AND `product`.`product_price` >= ' + req.query.begin
+        }
         let sql = '';
         switch (option) {
             case '0':
-                sql = 'SELECT `product`.* FROM `category` JOIN `category_product` ON `category_product`.`category_id` = `category`.`category_id` JOIN `product` ON `product`.`product_id` = `category_product`.`product_id` WHERE `category`.`category_id` = ? AND `category`.`status` = 1';
+                sql = 'SELECT `product`.* FROM `category` JOIN `category_product` ON `category_product`.`category_id` = `category`.`category_id` JOIN `product` ON `product`.`product_id` = `category_product`.`product_id` WHERE `category`.`category_id` = ? AND `category`.`status` = 1 AND' + filter + ' ORDER BY ' + sort+' `product`.`product_date` DESC,`product`.`product_id` ASC' ;
                 break;
             case '1':
-                sql = 'SELECT `product`.* FROM `category` JOIN `category_product` ON `category_product`.`category_id` = `category`.`category_id` JOIN `product` ON `product`.`product_id` = `category_product`.`product_id` WHERE `category`.`category_id` = ?';
+                sql = 'SELECT `product`.* FROM `category` JOIN `category_product` ON `category_product`.`category_id` = `category`.`category_id` JOIN `product` ON `product`.`product_id` = `category_product`.`product_id` WHERE `category`.`category_id` = ? AND'+ filter + ' ORDER BY ' + sort + ' `product`.`product_date` DESC,`product`.`product_id` ASC';
                 break;
             default:
                 return res.send({ status: "fail", message: 'key không hợp lệ' });
         }
         dbConn.query(sql, id, function (error, results, fields) {
             if (error) return res.send({ status: "fail", message: error });
-            console.log(results)
             if (results == null || results.length === 0) {
                 return res.send({ status: "fail", message: 'không có sản phẩm có id=' + id });
             }

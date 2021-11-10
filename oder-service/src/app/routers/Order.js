@@ -5,13 +5,14 @@ const axios = require('axios');
 
 function getOder(id, res, req) {
     dbConn.query('SELECT * FROM `order`  WHERE `oder_id` = ?', id, function (error, results, fields) {
-        if (error) return res.send({ status: "fail",  message: error });
+        if (error) return res.send({ status: "fail", message: error });
+        let data = results[0];
         if (results == null || results.length === 0) {
             return res.send({ status: "fail", message: 'không có sản phẩm trong cơ sở dữ liệu' });
         }
         else {
             dbConn.query('SELECT * FROM `product_oder` WHERE `oder_id` = ?', id, function (error, results, fields) {
-                if (error) return res.send({ status: "fail",  message: error });
+                if (error) return res.send({ status: "fail", message: error });
                 if (results == null || results.length === 0) {
                     return res.send({ status: "fail", message: 'không có sản phẩm trong cơ sở dữ liệu' });
                 }
@@ -29,7 +30,8 @@ function getOder(id, res, req) {
                     }
 
                     Promise.all([...arr2]).then(() => {
-                        res.send({ status: "success", data: results, message: "" })
+                        data.product_oder = results
+                        res.send({ status: "success", data: data, message: "" })
                     })
                 }
             });
@@ -40,7 +42,7 @@ function getOder(id, res, req) {
 
 function getOders(req, res, sql, id) {
     dbConn.query(sql, id, function (error, results, fields) {
-        if (error) return res.send({ status: "fail",  message: error });
+        if (error) return res.send({ status: "fail", message: error });
         if (results == null || results.length === 0) {
             return res.send({ status: "fail", message: 'không có sản phẩm trong cơ sở dữ liệu' });
         }
@@ -52,7 +54,7 @@ function getOders(req, res, sql, id) {
                 arr1.push(
                     new Promise(function (resolve, reject) {
                         dbConn.query('SELECT * FROM `product_oder` WHERE `oder_id` = ?', oderArr[i].oder_id, function (error, results, fields) {
-                            if (error) return res.send({ status: "success",  message: error });
+                            if (error) return res.send({ status: "success", message: error });
                             if (results == null || results.length === 0) {
                                 return res.send({ status: "fail", message: 'không có sản phẩm trong cơ sở dữ liệu' });
                             }
@@ -101,16 +103,16 @@ router.get('/all/:user_id/:option/:key', async (req, res) => {
         let sql = '';
         switch (option) {
             case '0':
-                sql = 'SELECT * FROM `order`  WHERE `status` = 0 AND `oder_customer` = ?';
+                sql = 'SELECT * FROM `order`  WHERE `status` = 0 AND `oder_customer` = ? ORDER BY `order`.`oder_date` DESC';
                 break;
             case '1':
-                sql = 'SELECT * FROM `order`  WHERE `status` = 1 AND `oder_customer` = ?';
+                sql = 'SELECT * FROM `order`  WHERE `status` = 1 AND `oder_customer` = ? ORDER BY `order`.`oder_date` DESC';
                 break;
             case '2':
-                sql = 'SELECT * FROM `order`  WHERE `status` = 2 AND `oder_customer` = ?';
+                sql = 'SELECT * FROM `order`  WHERE `status` = 2 AND `oder_customer` = ? ORDER BY `order`.`oder_date` DESC';
                 break;
             case '3':
-                sql = 'SELECT * FROM `order` WHERE `oder_customer` = ?';
+                sql = 'SELECT * FROM `order` WHERE `oder_customer` = ? ORDER BY `order`.`oder_date` DESC';
                 break;
             default:
                 return res.send({ status: "fail", message: 'option không hợp lệ' });
@@ -133,26 +135,57 @@ router.post('/save/:user_id/:key', async (req, res) => {
         let oder_id = id + Number(Date.now());
         if (req.cookies.cart) {
             cart = req.cookies.cart;
-            for (let i = 0; i < req.cookies.cart.length; i++) {
-                axios.get(process.env.PRODUCT_URL + `/api/product/get/` + cart[i].product_id + `/` + 1 + `/` + req.params.key)
-                    .then(res => {
-                        const { data } = res.data;
-                        cart[i].product = data;
-                    })
-                    .finally(() => {
+            // console.log(cart)
+            // return res.send({ status: "fail", message: 'đặt hàng thất bại' });
+            // for (let i = 0; i < req.cookies.cart.length; i++) {
+            //     axios.get(process.env.PRODUCT_URL + `/api/product/get/` + cart[i].product_id + `/` + 1 + `/` + req.params.key)
+            //         .then(res => {
+            //             const { data } = res.data;
+            //             cart[i].product = data;
+            //         })
+            //         .finally(() => {
 
-                        dbConn.query('INSERT INTO `product_oder`(`oder_id`, `product_id`, `product_quantity`,`shop_id`) VALUES (?,?,?,?)', [oder_id, cart[i].product_id, cart[i].qty, cart[i].shop_id], function (error, results, fields) {
-                            if (error) return res.send({ status: "fail",  message: error });
-                        });
-                        if (i == req.cookies.cart.length - 1) {
-                            dbConn.query('INSERT INTO `order`(`oder_id`, `oder_address`, `oder_phone`, `oder_customer`) VALUES (?,?,?,?)', [oder_id, req.body.address, req.body.phone, id], function (error, results, fields) {
-                                if (error) return res.send({ status: "fail",  message: error });
+            //             dbConn.query('INSERT INTO `product_oder`(`oder_id`, `product_id`, `product_quantity`,`shop_id`) VALUES (?,?,?,?)', [oder_id, cart[i].product_id, cart[i].qty, cart[i].shop_id], function (error, results, fields) {
+            //                 if (error) return res.send({ status: "fail", message: error });
+            //                 if (i == req.cookies.cart.length - 1) {
+            //                     dbConn.query('INSERT INTO `order`(`oder_id`, `oder_address`, `oder_phone`, `oder_customer`) VALUES (?,?,?,?)', [oder_id, req.body.address, req.body.phone, id], function (error, results, fields) {
+            //                         if (error) return res.send({ status: "fail", message: error });
+            //                         res.clearCookie('cart', { secure: true, sameSite: 'none' });
+            //                         return res.send({ status: "success", message: 'đã đặt hàng' });
+            //                     });
+            //                 }
+            //             });
+
+            //         });
+            // }
+            let datas = [];
+            for (let i = 0; i < req.cookies.cart.length; i++) {
+                datas.push(new Promise((resolve, reject) => {
+                    axios.get(process.env.PRODUCT_URL + `/api/product/get/` + cart[i].product_id + `/` + 1 + `/` + req.params.key)
+                        .then(res => {
+                            const { data } = res.data;
+                            cart[i].product = data;
+                            dbConn.query('INSERT INTO `product_oder`(`oder_id`, `product_id`, `product_quantity`,`shop_id`) VALUES (?,?,?,?)', [oder_id, data.product_id, cart[i].qty, data.shop_id], function (error, results, fields) {
+                                if (error) {
+                                    console.log(error);
+                                    return res.send({ status: "fail", message: error });
+                                }
+                                resolve();
                             });
-                            res.clearCookie('cart');
-                            res.send({ status: "success", message: 'đã đặt hàng' });
-                        }
-                    });
+                        })
+                }))
+
             }
+            Promise.all([...datas]).then(() => {
+                dbConn.query('INSERT INTO `order`(`oder_id`, `oder_address`, `oder_phone`, `oder_customer`) VALUES (?,?,?,?)', [oder_id, req.body.address, req.body.phone, id], function (error, results, fields) {
+                    if (error) {
+                        console.log(error);
+                        return res.send({ status: "fail", message: error });
+                    }
+                    res.clearCookie('cart', { secure: true, sameSite: 'none' });
+                    return res.send({ status: "success", message: 'đã đặt hàng' });
+                });
+            })
         }
         else {
             return res.send({ status: "fail", message: 'đặt hàng thất bại' });
@@ -174,21 +207,21 @@ router.post('/change/:user_id/:key', async (req, res) => {
     if (key == process.env.KEY) {
         if (status == 0) {
             dbConn.query('UPDATE `order` SET `status`=? WHERE `oder_id` = ? AND `oder_customer` = ?', [status, oder_id, user_id], function (error, results, fields) {
-                if (error) return res.send({ status: "fail",  message: error });
+                if (error) return res.send({ status: "fail", message: error });
                 dbConn.query('UPDATE `product_oder` SET `status`= ? WHERE `oder_id` = ?', [status, oder_id], function (error, results, fields) {
-                    if (error) return res.send({ status: "fail",  message: error });
+                    if (error) return res.send({ status: "fail", message: error });
                     getOders(req, res, 'SELECT * FROM `order` WHERE `oder_customer` = ?', user_id);
                 });
             });
         }
         else {
             dbConn.query('SELECT COUNT(`product_oder`.`product_id`) AS COUNT FROM `product_oder` WHERE `oder_id`= ? AND `status` != 0', oder_id, function (error, results, fields) {
-                if (error) return res.send({ status: "fail",  message: error });
+                if (error) return res.send({ status: "fail", message: error });
                 if (results[0].COUNT == 0) {
                     getOders(req, res, 'SELECT * FROM `order` WHERE `oder_customer` = ?', user_id);
                 } else {
                     dbConn.query('UPDATE `order` SET `status`=? WHERE `oder_id` = ? AND `oder_customer` = ?', [status, oder_id, user_id], function (error, results, fields) {
-                        if (error) return res.send({ status: "fail",  message: error });
+                        if (error) return res.send({ status: "fail", message: error });
                         getOders(req, res, 'SELECT * FROM `order` WHERE `oder_customer` = ?', user_id);
                     });
                 }
@@ -212,18 +245,18 @@ router.post('/change_product/:key', async (req, res) => {
     let status = req.body.status;
     if (key == process.env.KEY) {
         dbConn.query('UPDATE `product_oder` SET `status`= ? WHERE `product_id` = ? AND `oder_id` = ?', [status, product_id, oder_id], function (error, results, fields) {
-            if (error) return res.send({ status: "fail",  message: error });
+            if (error) return res.send({ status: "fail", message: error });
             let count = 0;
             let oder_product_count = [];
             dbConn.query('SELECT * FROM `product_oder` WHERE `oder_id` = ? AND `status` = ?', [oder_id, status], function (error, results, fields) {
-                if (error) return res.send({ status: "fail",  message: error });
+                if (error) return res.send({ status: "fail", message: error });
                 oder_product_count = results.length;
                 dbConn.query('SELECT * FROM `product_oder` WHERE `oder_id` = ? ', oder_id, function (error, results, fields) {
-                    if (error) return res.send({ status: "fail",  message: error });
+                    if (error) return res.send({ status: "fail", message: error });
                     count = results.length;
                     if (oder_product_count == count) {
                         dbConn.query('UPDATE `order` SET `status`= ? WHERE `oder_id` = ?', [status, oder_id], function (error, results, fields) {
-                            if (error) return res.send({ status: "fail",  message: error });
+                            if (error) return res.send({ status: "fail", message: error });
                             getOder(oder_id, res, req)
                         });
                     } else {
@@ -264,13 +297,13 @@ router.get('/get_shop/:shop_id/:key', async (req, res) => {
     if (key == process.env.KEY) {
         let result = [];
         dbConn.query('SELECT DISTINCT `order`.* FROM `product_oder` JOIN `order` ON `product_oder`.`oder_id` = `order`.`oder_id` WHERE `product_oder`.`shop_id` =  ?', id, function (error, results, fields) {
-            if (error) return res.send({ status: "fail",  message: error });
+            if (error) return res.send({ status: "fail", message: error });
             result = results;
             let arr1 = [];
             for (let i = 0; i < results.length; i++) {
                 arr1.push(new Promise(function (resolve, reject) {
                     dbConn.query('SELECT `product_oder`.* FROM `product_oder` JOIN `order` ON `product_oder`.`oder_id` = `order`.`oder_id` WHERE `product_oder`.`shop_id` = ? AND `product_oder`.`oder_id` = ?', [id, results[i].oder_id], function (error, results, fields) {
-                        if (error) return res.send({ status: "fail",  message: error });
+                        if (error) return res.send({ status: "fail", message: error });
                         result[i].product_oder = results;
                         resolve();
                     })

@@ -21,7 +21,7 @@ app.listen(3005, function () {
     console.log('Admin service port 3005');
     setInterval(function () {
         dbConn.query('SELECT version()', function (error, results, fields) {
-            if (error) throw error;
+            if (error) console.log('Admin service port error '+ error);
             console.log('Admin service port 3005');
         });
     }, 300000);

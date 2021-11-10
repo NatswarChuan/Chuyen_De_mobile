@@ -24,7 +24,7 @@ app.listen(3004, function () {
     console.log('Oder service port 3004');
     setInterval(function () {
         dbConn.query('SELECT version()', function (error, results, fields) {
-            if (error) throw error;
+            if (error) console.log('Oder service port error', error);
             console.log('Oder service port 3004');
         });
     }, 300000);

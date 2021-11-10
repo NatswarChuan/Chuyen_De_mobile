@@ -84,8 +84,6 @@ router.get('/all/:option/:key', async (req, res) => {
                 return res.send({ status: "fail", message: 'key không hợp lệ' });
         }
 
-        console.log(sql)
-
         dbConn.query(sql, function (error, results, fields) {
             if (error) return res.send({ status: "fail", message: error });
             if (results == null || results.length === 0) {
@@ -427,7 +425,7 @@ router.post('/insert/:shop_id/:key', async (req, res) => {
         let product_image = req.body.product_image;
         let product_title = req.body.product_title;
         let product_description = req.body.product_description;
-        let product_sale = req.body.product_sale;
+        let product_sale = req.body.product_sale == '' ? 0 : req.body.product_sale;
         let product_categories = req.body.product_categories;
 
         dbConn.query(
@@ -438,16 +436,29 @@ router.post('/insert/:shop_id/:key', async (req, res) => {
                 const categoryArr = product_categories.split(',');
                 let arr = [];
                 for (const item of categoryArr) {
-                    arr.push(dbConn.query('INSERT INTO `category_product`(`category_id`, `product_id`) VALUES (?,?)', [item, product_id], function (error, results, fields) {
-                        if (error) return res.send({ status: "fail", message: error });
-                    }));
+                    arr.push(
+                        new Promise(function (resolve, reject) {
+                            dbConn.query('INSERT INTO `category_product`(`category_id`, `product_id`) VALUES (?,?)', [item, product_id], function (error, results, fields) {
+                                if (error) {
+                                    console.log(error,443);
+                                    return res.send({ status: "fail", message: error });
+                                } 
+                                    
+                                resolve();
+                            })
+
+                        }));
                 }
 
                 Promise.all([...arr]).then(() => {
                     let page = 11;
                     dbConn.query('SELECT `product`.* FROM `product`  WHERE `shop_id` = ? ORDER BY `product_date` DESC,`product`.`product_id` ASC LIMIT 0,?', [shop_id, page], function (error, results, fields) {
-                        if (error) throw error;
+                        if (error) {
+                            console.log(error,457);
+                            return res.send({ status: "fail", message: error });
+                        } 
                         if (results == null || results.length === 0) {
+                            console.log(461);
                             return res.send({ status: "fail", message: 'không có sản phẩm trong cơ sở dữ liệu' });
                         }
                         else {
@@ -528,7 +539,7 @@ router.post('/update/:shop_id/:key', async (req, res) => {
         let product_image = req.body.product_image;
         let product_title = req.body.product_title;
         let product_description = req.body.product_description;
-        let product_sale = req.body.product_sale;
+        let product_sale = req.body.product_sale == '' ? 0 : req.body.product_sale;
         let product_id = req.body.product_id;
         let product_categories = req.body.product_categories;
         let last_update = req.body.last_update;
@@ -542,9 +553,13 @@ router.post('/update/:shop_id/:key', async (req, res) => {
                         const categoryArr = product_categories.split(',');
                         let arr = [];
                         for (const item of categoryArr) {
-                            arr.push(dbConn.query('INSERT INTO `category_product`(`category_id`, `product_id`) VALUES (?,?)', [item, product_id], function (error, results, fields) {
-                                if (error) return res.send({ status: "fail", message: error });
-                            }));
+                            arr.push(
+                                new Promise(function (resolve, reject) {
+                                    dbConn.query('INSERT INTO `category_product`(`category_id`, `product_id`) VALUES (?,?)', [item, product_id], function (error, results, fields) {
+                                        if (error) return res.send({ status: "fail", message: error });
+                                        resolve();
+                                    })
+                                }));
                         }
 
                         Promise.all([...arr]).then(() => {

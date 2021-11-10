@@ -5,6 +5,19 @@ var bodyParser = require('body-parser');
 var imageRouter = require('./app/routers/Image');
 var sliderRouter = require('./app/routers/Slider');
 var dbConn = require('./app/config/Db/config');
+const https = require('https');
+const fs = require('fs');
+const privateKey = fs.readFileSync('./certificate/private.key');
+const certificate = fs.readFileSync('./certificate/certificate.crt');
+const ca = fs.readFileSync('./certificate/ca_bundle.crt');
+
+const credentials = {
+    key: privateKey,
+    cert: certificate,
+    ca: ca
+};
+const httpsServer = https.createServer(credentials, app);
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.set('port', process.env.PORT);
@@ -36,9 +49,14 @@ app.listen(3002, function () {
     console.log('Image service is running on port ' + process.env.PORT);
     setInterval(function () {
         dbConn.query('SELECT version()', function (error, results, fields) {
-            if (error) throw error;
+            if (error) console.log('Image service is running on error ' + error);
+            console.log('Image service is running on port 333');
             console.log('Image service is running on port ' + process.env.PORT);
         });
     }, 300000);
+});
+
+httpsServer.listen(333, () => {
+    console.log('Image service is running on port 333');
 });
 module.exports = app;

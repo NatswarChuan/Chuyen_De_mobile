@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1:3308
--- Thời gian đã tạo: Th10 13, 2021 lúc 03:59 AM
+-- Thời gian đã tạo: Th10 31, 2021 lúc 04:09 PM
 -- Phiên bản máy phục vụ: 10.6.4-MariaDB-log
 -- Phiên bản PHP: 7.3.21
 
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `information` (
 --
 
 INSERT INTO `information` (`user_id`, `api_key`, `information_email`, `information_password`, `last_update`) VALUES
-(1, '', 'natswarchuan@gmail.com', 'c2991999', 0),
+(1, '', 'natswarchuan@gmail.com', 'Chuan2909', 0),
 (84, '', 'hoanganhk@gmail.com', '123456789', 84),
 (3, '', 'anhsonxui@gmail.com', 'd660d76ca3f2be604a2ccf9bcc54f95e', 0),
 (75, '', 'hoanganh60k@gmail.com', 'hoanganh11k', 75),
@@ -50,15 +50,20 @@ INSERT INTO `information` (`user_id`, `api_key`, `information_email`, `informati
 (73, '', 'hoanganh58k@gmail.com', '123', 73),
 (72, '', 'hoanganh57k@gmail.com', '123', 72),
 (71, '', 'hoanganh56k@gmail.com', '123', 71),
-(69, '', 'hoanganh32k@gmail.com', '123', 69),
+(69, '', 'hoanganh32k@gmail.com', 'H12345', 69),
 (78, '', 'hoanganh63k@gmail.com', '123', 78),
 (79, '', 'hoanganh64k@gmail.com', '123', 79),
 (80, '', 'hoanganh65k@gmail.com', '123', 80),
-(81, '', 'hoanganh66k@gmail.com', '123', 81),
+(81, '', 'hoanganh66k@gmail.com', 'Hoanganh22k', 81),
 (82, '', 'hoanganh67k@gmail.com', '123', 82),
 (83, '', 'hoanganh300k@gmail.com', NULL, 83),
-(90, 'EAAOIQ55b79gBAHrqqm79TbWe0sAu6ZCeuvTYcx6TWmKB8L4ZAQpP5RfOZAGSNPbONDG1uiLkrLYfNc5jVwEEuEXK2mo9rrE72nK3POUUjkbQoz3lqFZBntSgZCLAscxTwuo2jsGAhzTJAuk5ujkaU21ymbtZC0QHl0fIbQZCsBmPFbARMR9njVznMVBTajwyhZCYdZCtZCS3mjEKKJXa2Mcx1evFPXk7owH8j1NkSrbB6QEgZDZD', 'hoanganh34k@gmail.com', 'Hoanganh22k', 90),
-(92, 'EAAOIQ55b79gBAGBRlZACZBD35PYgyZB5BU2Wo4TABL02LnsP1DamkZAmjaXO36WMFJzOFcX99XAnGZCIjNOdeU08naYDcBkFSaFfZALhvETu2nLXxm0MiTewdwdLrz4DvHUyyFbQ1bwqzBfBJQ6eAWLlsbO9muk4GijZCu50Wmlrxj8cWrbRf8R03UE01bjera7SZCLv8vuW9jKBZBXUzGZCWl2hUHyg3fJMBNlmqXBiWk6AZDZD', 'chuanxin1999@gmail.com', 'null', 92);
+(90, 'EAAOIQ55b79gBAIXRu3IfKtwZA3QY2TsQhbTqja56s9ZBFsG56SzJ0f5qi2u7vFuPs6W2adHOlgKr0EXHcIQYawG5ZCQgA1joqWfsGDhrQeZAFP6KSiKQhzvbmvXPVl0Ty049e8ccAZBSP0KYAj09TQZCMKHqG8l884teygGTcpJiZAQfHeNhgqVXZAIPzD71GUySpr2bLaisr1ROcSHjwOZCY', 'hoanganh34k@gmail.com', 'Hoanganh22k', 90),
+(102, NULL, 'willey.11121998stc@gmail.com', '123456', 102),
+(92, 'EAAOIQ55b79gBABfGQ82dc6t1NGjG17opPS1x9NOFceWBJ3RY7tdF1raNwQwDZCZCERCNkFe1snY3T3CZAB74IXMC3J12nM6FGLW9bWP4S7dhvQ4k2j2oluUuE3wRksBS2M1dZAX5Y5g1dY7W2CRTSjMkU21Qlu6yzZAhngLYIhXRA2NN0KAuEUvAz39LXPAdfqFqtQKiOTe013Ibq0te4KRaFhLmxJ0n3fMWOctBrIgZDZD', 'chuanxin1999@gmail.com', 'null', 92),
+(96, NULL, 'Hoanganh11k', 'hoanganh300k@gmail.com', 96),
+(97, NULL, 'hoanganh301k@gmail.com', 'hoanganh11k', 97),
+(98, NULL, 'hoanganh100k@gmail.com', 'Hoanganh11k', 98),
+(100, 'EAAOIQ55b79gBAN4yRb8skFJwD7blN85Bj6VCgNI6sxJbZBf5K3KxyiRdiAYego7XIznXZCZB5XfKweuE74ZBxYWpL3WOFCB8wts3FfEDaZAqZC0Rb5sfQsjI0ZAEyZBhVp7TEZAxxbjEISBzZCULMP1lOuoTJffstBpxQzJwOVZCaC2Umh01YJ5uRKlZA813fP7FscO23P3LkG6lg6UjfkpIMRNLsWjRXtJD9vRsBNzTFrycTQZDZD', 'singaopo9@gmail.com', 'null', 100);
 
 -- --------------------------------------------------------
 
@@ -140,7 +145,7 @@ CREATE TABLE IF NOT EXISTS `profile` (
   `profile_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `last_update` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`profile_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `profile`
@@ -153,8 +158,14 @@ INSERT INTO `profile` (`profile_id`, `user_id`, `profile_phone`, `profile_birthd
 (5, 83, NULL, NULL, NULL, 0),
 (6, 84, NULL, NULL, NULL, 0),
 (8, 86, '0968241064', NULL, 'Pham Hoang Anh', 0),
-(12, 90, '01693444666', '1999-09-28', 'Phạm Anh', 90),
-(14, 92, '0968241064', '1999-09-29', 'Vũ Minh Chuẩn', 0);
+(12, 90, '01693444666', '1999-09-28', 'Phạm Anh 2', 90),
+(14, 92, '0968241064', '1999-09-29', 'Vũ Minh Chuẩn', 0),
+(16, 94, NULL, NULL, NULL, 0),
+(18, 96, NULL, NULL, NULL, 0),
+(19, 97, NULL, NULL, NULL, 0),
+(20, 98, NULL, NULL, NULL, 0),
+(22, 100, NULL, NULL, 'Tạ Quang', 0),
+(24, 102, NULL, NULL, NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -171,14 +182,14 @@ CREATE TABLE IF NOT EXISTS `user` (
   `last_update` int(11) NOT NULL DEFAULT 0,
   `status` int(11) NOT NULL DEFAULT 1,
   PRIMARY KEY (`user_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=93 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=103 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `user`
 --
 
 INSERT INTO `user` (`user_id`, `user_key`, `user_name`, `user_avatar`, `last_update`, `status`) VALUES
-(1, '3', 'Natswar', '661634095886863', 1, 1),
+(1, '3', 'Natswar', '2851634110329223', 1, 1),
 (3, NULL, 'WhiteKing', '7401633320689314', 0, 1),
 (83, NULL, 'hoanganh35k', '7401633320689314', 0, 1),
 (82, NULL, 'hoanganh67k', NULL, 0, 1),
@@ -195,8 +206,14 @@ INSERT INTO `user` (`user_id`, `user_key`, `user_name`, `user_avatar`, `last_upd
 (71, NULL, 'hoanganh56k', NULL, 0, 1),
 (70, NULL, 'hoanganh55k', NULL, 0, 1),
 (69, NULL, 'hoanganh11k', NULL, 0, 1),
-(90, NULL, '2051568581664238', NULL, 0, 1),
-(92, NULL, '1517619531926611', NULL, 0, 1);
+(90, 'null', '2051568581664238', '6951634454071591', 90, 1),
+(92, NULL, '1517619531926611', NULL, 0, 1),
+(94, NULL, 'hoanganh22k', NULL, 0, 1),
+(96, NULL, 'hoanganh300k', NULL, 0, 1),
+(97, NULL, 'hoanganh310k', NULL, 0, 1),
+(98, NULL, 'Hoanganhvippro', NULL, 0, 1),
+(100, NULL, '176701317975084', NULL, 0, 1),
+(102, NULL, 'helloword', NULL, 0, 1);
 
 -- --------------------------------------------------------
 
@@ -264,7 +281,13 @@ INSERT INTO `user_permission` (`permission_id`, `user_id`) VALUES
 (1, 88),
 (1, 89),
 (1, 90),
-(1, 92);
+(1, 92),
+(1, 94),
+(1, 96),
+(1, 97),
+(1, 98),
+(1, 100),
+(1, 102);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

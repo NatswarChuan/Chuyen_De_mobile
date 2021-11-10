@@ -3,6 +3,7 @@ const { exists } = require('fs');
 const app = express();
 const http = require('http');
 var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
 var session = require('express-session');
 const server = http.createServer(app);
 var mysql = require('mysql');
@@ -11,46 +12,42 @@ const port = 3000;
 var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 var md5 = require('md5');
-// const redis = require('redis');
-// const connectRedis = require('connect-redis');
-// // enable this if you run behind a proxy (e.g. nginx)
-// const RedisStore = connectRedis(session)
-// //Configure redis client
-// const redisClient = redis.createClient({
-//     host: '127.0.0.1',
-//     port: 6379,
-//     password: 'hoanganh11k'
-// })
-// redisClient.on('error', function (err) {
-//     console.log('Could not establish a connection with redis. ' + err);
-// });
-// redisClient.on('connect', function (err) {
-//     console.log('Connected to redis successfully');
-// });
-// app.use(cookieParser())
-// //Configure session middleware
-// app.use(session({
-//     store: new RedisStore({ client: redisClient,collection: 'sessions' }),
-//     secret: 'secret$%^134',
-//     resave: true,
-//     saveUninitialized: true,
-//     name: 'hoanganh11k', 
-//     cookie: {
-//         secure: false, // if true only transmit cookie over https
-//         httpOnly: false, // if true prevent client side JS from reading the cookie 
-//         maxAge: 1000 * 60 * 10 // session max age in miliseconds
-//     },
-// }))
-// app.use(function (req, res, next) {
-//     if (typeof req.cookies.client_id == 'undefined') {
-//         var uniqid = Date.now() + '_' + md5(makeid(125));
-//         res.cookie('client_id', uniqid, { maxAge: 365 * 24 * 60 * 60 * 1000, httpOnly: true });
-//     }
-//     if (req.session.id != req.cookies.client_id) {
-//         res.cookie('client_id', req.session.id, { maxAge: 365 * 24 * 60 * 60 * 1000, httpOnly: true });
-//     }
-//     next(); // <-- important!
-// });
+const redis = require('redis');
+const connectRedis = require('connect-redis');
+// enable this if you run behind a proxy (e.g. nginx)
+const RedisStore = connectRedis(session)
+//Configure redis client
+const redisClient = redis.createClient({
+    host: '127.0.0.1',
+    port: 6379,
+    password: 'hoanganh11k'
+})
+redisClient.on('error', function (err) {
+    console.log('Could not establish a connection with redis. ' + err);
+});
+redisClient.on('connect', function (err) {
+    console.log('Connected to redis successfully');
+});
+app.use(cookieParser())
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.set('trust proxy', 1);
+
+//Configure session middleware
+app.use(session({
+    store: new RedisStore({ client: redisClient, collection: 'sessions' }),
+    secret: 'secret$%^134',
+    resave: true,
+    saveUninitialized: true,
+    name: 'hoanganh11k',
+    cookie: {
+        sameSite: 'none',
+        secure: true, // if true only transmit cookie over https
+        httpOnly: false, // if true prevent client side JS from reading the cookie 
+        maxAge: 1000 * 60 * 10 // session max age in miliseconds
+    },
+}))
+
 
 
 const APIs_KEY = 'e4611a028c71342a5b083d2cbf59c494';
@@ -175,9 +172,10 @@ app.get('/api/user/create/:user_permission/:user_name/:user_password/:user_email
 });
 
 //Xác thực login trên hệ thống
-app.get('/api/user/login/:user_email/:user_password/:key', function (request, response) {
-    var email = request.params.user_email;
-    var password = request.params.user_password;
+app.post('/api/user/login/:key', function (request, response) {
+    console.log(request.body.password)
+    var email = request.body.email;
+    var password = request.body.password;
     if (email != null && password != null) {
         con.query('SELECT `user_id`, `information_email`, `information_password`, `last_update` FROM `information` WHERE information_email = ? AND information_password = ?', [email, password], function (error, results, fields) {
             if (results.length > 0) {
@@ -244,7 +242,7 @@ app.get('/api/user/get/profile', function (request, response) {
                     name = row.profile_name;
                     birthday = row.profile_birthday
                 });
-                data = { 'id': id, 'phone': phone, 'name': name, 'birthday': birthday,'email': email};
+                data = { 'id': id, 'phone': phone, 'name': name, 'birthday': birthday, 'email': email };
                 console.log(data)
             }
             response.send(data_json_endcode(data, 'Lấy dữ liệu thành công!!'));
@@ -275,16 +273,20 @@ app.get('/api/user/get/user', function (request, response) {
         var user_avatar;
         var user_status;
         var user_last_update;
-        con.query('SELECT * FROM `user` WHERE user_id = ' + id, function (error, results, fields) {
+        con.query('SELECT `user`.*,`profile`.`profile_birthday` AS `user_birthday`, `profile`.`profile_phone` AS `user_phone`, `profile`.`profile_name` AS `user_real_name`, `information`.`information_email` AS `user_email` FROM `user` JOIN `profile` ON `profile`.`user_id` = `user`.`user_id` JOIN `information` ON `information`.`user_id` = `user`.`user_id` WHERE `user`.`user_id`= ' + id, function (error, results, fields) {
             Object.keys(results).forEach(function (key) {
                 var row = results[key];
                 user_key = row.user_key;
                 user_name = row.user_name;
                 user_avatar = row.user_avatar;
                 user_status = row.status;
-                user_last_update = row.last_update
+                user_phone = row.user_phone;
+                user_email = row.user_email;
+                user_last_update = row.last_update;
+                user_real_name = row.user_real_name;
+                user_birthday = row.user_birthday;
             });
-            data = { 'user_id': id, 'user_key': user_key, 'user_name': user_name, 'user_avatar': user_avatar, 'user_status': user_status, 'user_last_update': user_last_update }
+            data = { 'user_birthday': user_birthday, 'user_id': id, 'user_key': user_key, 'user_name': user_name, 'user_avatar': user_avatar, 'user_status': user_status, 'user_last_update': user_last_update, 'user_phone': user_phone, 'user_email': user_email, 'user_real_name': user_real_name }
             response.send(data_json_endcode(data, 'Lấy thành công!!'));
         })
     } else {
@@ -349,50 +351,69 @@ app.get('/api/user/update/profile/:profile_name/:profile_phone/:profile_birthday
         response.send(data_json_endcode(false, 'Chưa đăng nhập!!'));
     }
 });
+//update all
+app.get('/api/user/update/profile/:profile_name/:profile_phone/:profile_birthday/:user_avatar', function (request, response) {
+    if (request.session.loggedin) {
+        var user_id = request.session.user_id
+        var profile_phone = request.params.profile_phone
+        var profile_name = request.params.profile_name
+        var profile_birthday = request.params.profile_birthday
+        var user_avatar = request.params.user_avatar
+        var last_update = request.session.user_id;
+        con.query('UPDATE `profile` SET`profile_phone`= ?,`profile_birthday`=?,`profile_name`= ?,`last_update`= ? WHERE user_id =?', [profile_phone, profile_birthday, profile_name, user_id, user_id], function (error, results, fields) {
+            var data = { 'user_id': user_id, 'profile_name': profile_name, 'profile_phone': profile_phone, 'profile_birthday': profile_birthday }
+            con.query('UPDATE `user` SET `user_avatar`=?,`last_update`=? WHERE user_id = ? ', [user_avatar, last_update, user_id], function (error, results, fields) {
+                response.send(data_json_endcode(true, 'Sửa thông tin thành công!!'));
+            })
+        })
+    } else {
+        response.send(data_json_endcode(false, 'Chưa đăng nhập!!'));
+    }
+});
 
 //Hàm đặt lại mật khẩu gửi mail code
-// app.get('/api/user/forgot/password/:email', function (request, response) {
-//     var email = request.params.email;
-//     var codePinTemp = Math.random().toString().substr(2, 6);
+app.get('/api/user/forgot/password/:email', function (request, response) {
+    var email = request.params.email;
+    var codePinTemp = Math.random().toString().substr(2, 6);
 
-//     var mailOptions = {
-//         from: email,
-//         to: email,
-//         subject: 'Quên mật khẩu Code Pin :' + codePinTemp,
-//         text: 'Mã code chỉ có hiệu lực trong 1 phút \n Code pin: ' + codePinTemp
-//     };
+    var mailOptions = {
+        from: email,
+        to: email,
+        subject: 'Quên mật khẩu Code Pin :' + codePinTemp,
+        text: 'Mã code chỉ có hiệu lực trong 1 phút \n Code pin: ' + codePinTemp
+    };
 
-//     transporter.sendMail(mailOptions, function (error, info) {
-//         if (error) {
-//             console.log(error);
-//             response.send(error_Print(556, 'Vui lòng kiểm tra lại email!!'))
-//         } else {
-//             redisClient.rpush('codePin2', JSON.stringify({ 'email': email, 'codePin': codePinTemp }))
-//             setTimeout(function () {
-//                 redisClient.lrem('codePin2', 0, JSON.stringify({ 'email': email, 'codePin': codePinTemp }), function (err, data) {
-//                 });
-//             }, 60000);
-//             console.log('Email sent: ' + info.response);
-//             response.send(data_json_endcode(null, 'Vui lòng check mail!!'))
-//         }
-//     });
-// });
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            console.log(error);
+            response.send(error_Print(556, 'Vui lòng kiểm tra lại email!!'))
+        } else {
+            redisClient.rpush('codePin2', JSON.stringify({ 'email': email, 'codePin': codePinTemp }))
+            setTimeout(function () {
+                redisClient.lrem('codePin2', 0, JSON.stringify({ 'email': email, 'codePin': codePinTemp }), function (err, data) {
+                });
+            }, 60000);
+            console.log('Email sent: ' + info.response);
+            response.send(data_json_endcode(null, 'Vui lòng check mail!!'))
+        }
+    });
+});
 
 //Hàm check codePin
-// app.get('/api/user/forgot/password/checkPin/:email/:codePin', function (request, response) {
-//     var codePinTemp = request.params.codePin;
-//     var email = request.params.email
-//     var dataTemp = { 'email': email, 'codePin': codePinTemp };
-//     redisClient.lrange('codePin2', 0, -1, function (error, items) {
-//         if (error) throw error
-//         if (items.some(item => _.isEqual(JSON.parse(item), dataTemp)) == true) {
-//             response.send(data_json_endcode(true, "Xác nhận thành công!!"))
-//         } else {
-//             response.send(data_json_endcode(false, "Mã code không hợp lệ!!"))
-//         }
-//     })
+app.get('/api/user/forgot/password/checkPin/:email/:codePin', function (request, response) {
+    var codePinTemp = request.params.codePin;
+    var email = request.params.email
+    var dataTemp = { 'email': email, 'codePin': codePinTemp };
+    redisClient.lrange('codePin2', 0, -1, function (error, items) {
+        if (error) throw error
+        if (items.some(item => _.isEqual(JSON.parse(item), dataTemp)) == true) {
+            response.send(data_json_endcode(true, "Xác nhận thành công!!"))
+        } else {
+            response.send(data_json_endcode(false, "Mã code không hợp lệ!!"))
+        }
+    })
 
-// });
+});
 //Hàm đổi mật khẩu
 app.get('/api/user/forgot/password/center/:email/:password', function (request, response) {
     var password = request.params.password;
@@ -404,12 +425,12 @@ app.get('/api/user/forgot/password/center/:email/:password', function (request, 
 });
 
 //1.Login facebook trên app người dùng
-app.get('/api/user/login/facebook/:user_permission/:api_key/:user_email/:user_name/:full_name/:key', (request, response, next) => {
-    var user_permission = request.params.user_permission;
-    var email = request.params.user_email;
+app.post('/api/user/login/facebook/:key', (request, response, next) => {
+    var user_permission = request.body.user_permission;
+    var email = request.body.user_email;
     // var password = null;
-    var user_name = request.params.user_name
-    var tocken = request.params.api_key
+    var user_name = request.body.user_name
+    var tocken = request.body.tocken
     if (request.params.key == APIs_KEY) {
         check_tocken_exits(tocken, function (err, data) {
             if (data == true) {
@@ -465,7 +486,7 @@ app.get('/api/user/login/facebook/:user_permission/:api_key/:user_email/:user_na
                                             con.query(user_infomation, function (err, results) {
                                                 console.log(request.ip + ' : Register Successs information');
                                             })
-                                            con.query('INSERT INTO `profile`(`user_id`, `profile_name`) VALUES (?,?)', [results.insertId,request.params.full_name], function (err, results) {
+                                            con.query('INSERT INTO `profile`(`user_id`, `profile_name`) VALUES (?,?)', [results.insertId, request.body.full_name], function (err, results) {
                                                 console.log(request.ip + ' : Register Successs profile');
                                             })
                                             var temp = { 'user_id': id, 'user_name': user_name, 'user_password': user_password }

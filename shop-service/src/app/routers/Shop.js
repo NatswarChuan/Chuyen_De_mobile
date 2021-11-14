@@ -35,7 +35,7 @@ router.get('/info/:shop_id/:option/:key', async (req, res) => {
                         return res.send({ status: "success", data: results[0], message: 'cửa hàng có id=' + id });
 
                     })
-                    .catch(error => { return res.send({ status: "fail", message: error })});
+                    .catch(error => { return res.send({ status: "fail", message: error }) });
             }
         });
     }
@@ -138,7 +138,7 @@ router.post('/update/:shop_id/:key', async (req, res) => {
 /**
  * Trả về thông tin của shop theo owner
  */
- router.get('/get/:shop_owner/:option/:key', async (req, res) => {
+router.get('/get/:shop_owner/:option/:key', async (req, res) => {
     let id = req.params.shop_owner;
     let key = req.params.key;
     let option = req.params.option;
@@ -157,7 +157,7 @@ router.post('/update/:shop_id/:key', async (req, res) => {
         dbConn.query(sql, id, function (error, results, fields) {
             if (error) res.send({ status: "fail", message: error });
             if (results == null || results.length === 0) {
-                return res.send({ status: "fail",data: {} ,message: 'không có shop' });
+                return res.send({ status: "fail", data: {}, message: 'không có shop' });
             }
             else {
                 axios.get(process.env.IMG_URL + `/api/image/get/` + results[0].shop_avatar + `/` + req.params.key)
@@ -168,7 +168,89 @@ router.post('/update/:shop_id/:key', async (req, res) => {
                         return res.send({ status: "success", data: results[0], message: 'cửa hàng có id=' + id });
 
                     })
-                    .catch(error => { return res.send({ status: "fail", message: error })});
+                    .catch(error => { return res.send({ status: "fail", message: error }) });
+            }
+        });
+    }
+    else {
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
+    }
+});
+
+/**
+ * Cập nhật doanh thu shop
+ */
+router.get('/update_revenue/:shop_id/:price/:key', async (req, res) => {
+    let id = req.params.shop_id;
+    let key = req.params.key;
+    let price = req.params.price;
+    if (key == process.env.KEY) {
+        dbConn.query('SELECT * FROM `revenue` WHERE `shop_id` = ? GROUP BY `revenue_id` DESC', id, function (error, results, fields) {
+            if (error) return res.send({ status: "fail", message: error });
+            const access = results[0];
+            const now = new Date(Date.now());
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const season = ((month + 1) % 3 == 0) ? Math.floor((month + 1) / 3) : Math.floor(((month + 1) / 3) + 1);
+            let sql = '';
+            if (access.revenue_year == year && access.revenue_month == month && access.revenue_seasion == season) {
+                sql = 'UPDATE `revenue` SET `revenue_money`= `revenue_money` + ? WHERE `revenue_month` = ? AND `revenue_year` = ? AND `revenue_seasion` = ? AND `shop_id` = ?';
+            }
+            else {
+                sql = 'INSERT INTO `revenue`(`revenue_money`, `revenue_month`, `revenue_year`, `revenue_seasion`,  `shop_id`) VALUES (?,?,?,?,?)';
+            }
+            dbConn.query(sql, [price, month, year, season, id], function (error, results, fields) {
+                if (error) return res.send({ status: "fail", message: error });
+                return res.send({ status: "success", message: 'cập nhật thành công' });
+            })
+        });
+    }
+    else {
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
+    }
+});
+
+/**
+ * Lấy danh sách shop
+ */
+router.get('/all/:key', async (req, res) => {
+    let key = req.params.key;
+    if (key == process.env.KEY) {
+        dbConn.query('SELECT * FROM `shop`', function (error, results, fields) {
+            if (error) return res.send({ status: "fail", message: error });
+            let arr = [];
+            for (let i = 0; i < results.length; i++) {
+                arr.push(axios.get(`${process.env.IMG_URL}/api/image/get/${results[i].shop_avatar}/${process.env.key}`).then((res) => {
+                    results[i].shop_avatar = res.data.data;
+                }))
+            }
+
+            Promise.all([...arr]).then(() => {
+                return res.send({ status: "success", data: results, message: "danh sách shop" })
+            })
+        });
+    }
+    else {
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
+    }
+});
+
+/**
+ * Cập nhật trạng thái shop
+ */
+router.get('/status/:status/:shop_id/:key', async (req, res) => {
+    let key = req.params.key;
+    let status = req.params.status;
+    let shop_id = req.params.shop_id;
+    if (key == process.env.KEY) {
+        dbConn.query('UPDATE `shop` SET `status`= ? WHERE `shop_id` = ?', [status, shop_id], function (error, results, fields) {
+            if (error) return res.send({ status: "fail", message: error });
+            if (results.affectedRows) {
+                axios.get(`${process.env.PRODUCT_URL}/api/product/update_status/${status}/${shop_id}/${process.env.key}`).then((response) => {
+                    return res.send({ status: "success", message: `cập nhật trạng thái shop ${shop_id} thành ${status}` });
+                })
+            } else {
+                return res.send({ status: "fail", message: results });
             }
         });
     }

@@ -19,14 +19,20 @@ function getOder(id, res, req) {
                 else {
                     let arr2 = [];
                     for (let j = 0; j < results.length; j++) {
-                        arr2.push(
-                            axios.get(process.env.PRODUCT_URL + `/api/product/get/` + results[j].product_id + `/` + 1 + `/` + req.params.key)
-                                .then(res => {
-                                    const { data } = res.data;
-                                    results[j].product = data
-                                    delete results[j]["product_id"];
-                                })
-                        )
+                        let product = {};
+                        product.product_title = results[j].product_title;
+                        product.product_price = results[j].product_price;
+                        product.product_sale = results[j].product_sale;
+                        arr2.push(axios.get(process.env.IMG_URL + `/api/image/get/` + results[j].product_avatar + `/` + process.env.KEY)
+                            .then(res => {
+                                const { data } = res.data;
+                                product.product_avatar = data;
+                                results[j].product = product
+                                delete results[j]['product_title'];
+                                delete results[j]['product_price'];
+                                delete results[j]['product_avatar'];
+                                delete results[j]['product_sale'];
+                            }));
                     }
 
                     Promise.all([...arr2]).then(() => {
@@ -72,14 +78,21 @@ function getOders(req, res, sql, id) {
                 let arr2 = [];
                 for (let i = 0; i < oderArr.length; i++) {
                     for (let j = 0; j < oderArr[i].product_oder.length; j++) {
-                        arr2.push(
-                            axios.get(process.env.PRODUCT_URL + `/api/product/get/` + oderArr[i].product_oder[j].product_id + `/` + 1 + `/` + req.params.key)
-                                .then(res => {
-                                    const { data } = res.data;
-                                    oderArr[i].product_oder[j].product = data
-                                    delete oderArr[i]["product_id"];
-                                })
-                        )
+                        console.log(oderArr[i].product_oder[j].product_title, 75)
+                        let product = {};
+                        product.product_title = oderArr[i].product_oder[j].product_title;
+                        product.product_price = oderArr[i].product_oder[j].product_price;
+                        product.product_sale = oderArr[i].product_oder[j].product_sale;
+                        arr2.push(axios.get(process.env.IMG_URL + `/api/image/get/` + oderArr[i].product_oder[j].product_avatar + `/` + process.env.KEY)
+                            .then(res => {
+                                const { data } = res.data;
+                                product.product_avatar = data;
+                                oderArr[i].product_oder[j].product = product
+                                delete oderArr[i].product_oder[j]['product_title'];
+                                delete oderArr[i].product_oder[j]['product_price'];
+                                delete oderArr[i].product_oder[j]['product_avatar'];
+                                delete oderArr[i].product_oder[j]['product_sale'];
+                            }));
                     }
                 }
 
@@ -131,53 +144,34 @@ router.get('/all/:user_id/:option/:key', async (req, res) => {
 router.post('/save/:user_id/:key', async (req, res) => {
     let key = req.params.key;
     let id = req.params.user_id;
+    const phone = req.body.address;
+    const address = req.body.address;
     if (key == process.env.KEY) {
         let oder_id = id + Number(Date.now());
         if (req.cookies.cart) {
             cart = req.cookies.cart;
-            // console.log(cart)
-            // return res.send({ status: "fail", message: 'đặt hàng thất bại' });
-            // for (let i = 0; i < req.cookies.cart.length; i++) {
-            //     axios.get(process.env.PRODUCT_URL + `/api/product/get/` + cart[i].product_id + `/` + 1 + `/` + req.params.key)
-            //         .then(res => {
-            //             const { data } = res.data;
-            //             cart[i].product = data;
-            //         })
-            //         .finally(() => {
-
-            //             dbConn.query('INSERT INTO `product_oder`(`oder_id`, `product_id`, `product_quantity`,`shop_id`) VALUES (?,?,?,?)', [oder_id, cart[i].product_id, cart[i].qty, cart[i].shop_id], function (error, results, fields) {
-            //                 if (error) return res.send({ status: "fail", message: error });
-            //                 if (i == req.cookies.cart.length - 1) {
-            //                     dbConn.query('INSERT INTO `order`(`oder_id`, `oder_address`, `oder_phone`, `oder_customer`) VALUES (?,?,?,?)', [oder_id, req.body.address, req.body.phone, id], function (error, results, fields) {
-            //                         if (error) return res.send({ status: "fail", message: error });
-            //                         res.clearCookie('cart', { secure: true, sameSite: 'none' });
-            //                         return res.send({ status: "success", message: 'đã đặt hàng' });
-            //                     });
-            //                 }
-            //             });
-
-            //         });
-            // }
             let datas = [];
             for (let i = 0; i < req.cookies.cart.length; i++) {
                 datas.push(new Promise((resolve, reject) => {
                     axios.get(process.env.PRODUCT_URL + `/api/product/get/` + cart[i].product_id + `/` + 1 + `/` + req.params.key)
-                        .then(res => {
-                            const { data } = res.data;
+                        .then(ress => {
+                            const { data } = ress.data;
                             cart[i].product = data;
-                            dbConn.query('INSERT INTO `product_oder`(`oder_id`, `product_id`, `product_quantity`,`shop_id`) VALUES (?,?,?,?)', [oder_id, data.product_id, cart[i].qty, data.shop_id], function (error, results, fields) {
-                                if (error) {
-                                    console.log(error);
-                                    return res.send({ status: "fail", message: error });
-                                }
-                                resolve();
-                            });
+                            product_price = data.product_price * (100 - data.product_sale) / 100;
+                            dbConn.query('INSERT INTO `product_oder`(`oder_id`, `product_id`, `product_quantity`,`shop_id`,`product_title`,`product_price`,`product_avatar`,`product_sale`) VALUES (?,?,?,?,?,?,?,?)',
+                                [oder_id, data.product_id, cart[i].qty, data.shop_id, data.product_title, product_price, data.product_avatar_id, data.product_sale], function (error, results, fields) {
+                                    if (error) {
+                                        console.log(error);
+                                        return res.send({ status: "fail", message: error });
+                                    }
+                                    resolve();
+                                });
                         })
                 }))
 
             }
             Promise.all([...datas]).then(() => {
-                dbConn.query('INSERT INTO `order`(`oder_id`, `oder_address`, `oder_phone`, `oder_customer`) VALUES (?,?,?,?)', [oder_id, req.body.address, req.body.phone, id], function (error, results, fields) {
+                dbConn.query('INSERT INTO `order`(`oder_id`, `oder_address`, `oder_phone`, `oder_customer`) VALUES (?,?,?,?)', [oder_id, address, phone, id], function (error, results, fields) {
                     if (error) {
                         console.log(error);
                         return res.send({ status: "fail", message: error });
@@ -247,13 +241,45 @@ router.post('/change_product/:key', async (req, res) => {
         dbConn.query('UPDATE `product_oder` SET `status`= ? WHERE `product_id` = ? AND `oder_id` = ?', [status, product_id, oder_id], function (error, results, fields) {
             if (error) return res.send({ status: "fail", message: error });
             let count = 0;
-            let oder_product_count = [];
-            dbConn.query('SELECT * FROM `product_oder` WHERE `oder_id` = ? AND `status` = ?', [oder_id, status], function (error, results, fields) {
-                if (error) return res.send({ status: "fail", message: error });
-                oder_product_count = results.length;
-                dbConn.query('SELECT * FROM `product_oder` WHERE `oder_id` = ? ', oder_id, function (error, results, fields) {
+            let oder_product_count = 0;
+            if (status == '0') {
+                dbConn.query('SELECT * FROM `product_oder` WHERE `oder_id` = ? AND `status` = ?', [oder_id, status], function (error, results, fields) {
                     if (error) return res.send({ status: "fail", message: error });
-                    count = results.length;
+                    oder_product_count = results.length;
+                    dbConn.query('SELECT * FROM `product_oder` WHERE `oder_id` = ? ', oder_id, function (error, results, fields) {
+                        if (error) return res.send({ status: "fail", message: error });
+                        count = results.length;
+                        if (oder_product_count == count) {
+                            dbConn.query('UPDATE `order` SET `status`= ? WHERE `oder_id` = ?', [status, oder_id], function (error, results, fields) {
+                                if (error) return res.send({ status: "fail", message: error });
+                                getOder(oder_id, res, req)
+                            });
+                        } else {
+                            getOder(oder_id, res, req)
+                        }
+                    });
+                });
+            } else if (status == "2" || status == "3") {
+                const pro_1 = new Promise((resolve, reject) => {
+                    dbConn.query('SELECT * FROM `product_oder` WHERE `oder_id` = ? AND `status` = ?', [oder_id, status], function (error, results, fields) {
+                        oder_product_count += results.length;
+                        resolve()
+                    })
+                })
+                const pro_2 = new Promise((resolve, reject) => {
+                    dbConn.query('SELECT * FROM `product_oder` WHERE `oder_id` = ? AND `status` = 0', oder_id, function (error, results, fields) {
+                        oder_product_count += results.length;
+                        resolve()
+                    })
+                })
+                const pro_3 = new Promise((resolve, reject) => {
+                    dbConn.query('SELECT * FROM `product_oder` WHERE `oder_id` = ? AND', oder_id, function (error, results, fields) {
+                        count += results.length;
+                        resolve()
+                    })
+                })
+
+                Promise.all([pro_1, pro_2, pro_3]).then(() => {
                     if (oder_product_count == count) {
                         dbConn.query('UPDATE `order` SET `status`= ? WHERE `oder_id` = ?', [status, oder_id], function (error, results, fields) {
                             if (error) return res.send({ status: "fail", message: error });
@@ -262,10 +288,10 @@ router.post('/change_product/:key', async (req, res) => {
                     } else {
                         getOder(oder_id, res, req)
                     }
-                });
-
-            });
-
+                })
+            } else {
+                getOder(oder_id, res, req)
+            }
         });
 
     }
@@ -328,6 +354,75 @@ router.get('/get_shop/:shop_id/:key', async (req, res) => {
 
 
         });
+    }
+    else {
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
+    }
+});
+
+/**
+ * Cập nhật trạng thái đơn hàng admin
+ */
+router.get('/change_status/:oder_id/:status/:key', async (req, res) => {
+    /**
+     * 0 -> hủy
+     * 1 -> đặt
+     * 2 -> giao
+     * 3 -> nhận
+     */
+    let key = req.params.key;
+    let oder_id = req.params.oder_id;
+    let status = req.params.status;
+    if (key == process.env.KEY) {
+        dbConn.query('UPDATE `order` SET `status`= ? WHERE `oder_id` = ?', [status, oder_id], function (error, results, fields) {
+            if (error) return res.send({ status: "fail", message: error });
+            console.log(typeof status);
+            if (status == 3) {
+                dbConn.query('SELECT * FROM `product_oder` WHERE `oder_id` = ? AND `status` = 2', oder_id, function (error, results, fields) {
+                    if (error) return res.send({ status: "fail", message: error });
+                    let commission = 0;
+                    let commission_rate = 0;
+                    let arr_oder_shop = {}
+                    let arrPromise = [];
+                    let arr = [];
+                    axios.get(`${process.env.ADMIN_URL}/api/commission/get/${key}`).then(response => {
+                        commission_rate = Number(response.data.data.commission_rate);
+                        for (const result of results) {
+                            arr.push(new Promise(function (resolve, reject) {
+                                dbConn.query('UPDATE `product_oder` SET `status`= ? WHERE `oder_id` = ? AND `product_id` = ?', [status, oder_id, result.product_id], function (error, results, fields) {
+                                    resolve()
+                                })
+                            }))
+                            if (!arr_oder_shop[result.shop_id]) {
+                                arr_oder_shop[result.shop_id] = [];
+                            }
+                            arr_oder_shop[result.shop_id].push(result);
+                        }
+
+                        for (const key in arr_oder_shop) {
+                            let revenue_shop = 0;
+                            if (Object.hasOwnProperty.call(arr_oder_shop, key)) {
+                                const element = arr_oder_shop[key];
+                                for (const item of element) {
+                                    revenue_shop += item.product_price * (100 - item.product_sale - commission_rate) / 100 * item.product_quantity;
+                                    commission += item.product_price * commission_rate / 100 * item.product_quantity;
+                                }
+                                arrPromise.push(axios.get(`${process.env.SHOP_URL}/api/shop/update_revenue/${key}/${revenue_shop}/${process.env.key}`))
+                            }
+                        }
+
+                        const update_revenue = axios.get(`${process.env.ADMIN_URL}/api/revenue/update_revenue/${commission}/${process.env.key}`)
+
+                        Promise.all([...arr, ...arrPromise, update_revenue]).then(() => {
+                            return res.send({ status: "success", message: "cập nhật thành công" });
+                        })
+
+                    })
+                })
+            } else {
+                return res.send({ status: "success", message: "không có option này" });
+            }
+        })
     }
     else {
         return res.send({ status: "fail", message: 'key không hợp lệ' });

@@ -8,7 +8,10 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-var accessRouter = require('./app/routers/Accesss');
+const accessRouter = require('./app/routers/Accesss');
+const ShipRouter = require('./app/routers/Ship');
+const commissionRouter = require('./app/routers/Commission');
+const revenueRouter = require('./app/routers/Revenue');
 app.set('port', process.env.PORT || 3005);
 
 app.get('/', function (req, res) {
@@ -16,12 +19,15 @@ app.get('/', function (req, res) {
 });
 
 app.use('/api/access', accessRouter);
+app.use('/api/commission', commissionRouter);
+app.use('/api/revenue', revenueRouter);
+app.use('/api/ship', ShipRouter);
 
 app.listen(3005, function () {
     console.log('Admin service port 3005');
     setInterval(function () {
         dbConn.query('SELECT version()', function (error, results, fields) {
-            if (error) console.log('Admin service port error '+ error);
+            if (error) console.log('Admin service port error ' + error);
             console.log('Admin service port 3005');
         });
     }, 300000);

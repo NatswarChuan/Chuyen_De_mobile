@@ -55,19 +55,23 @@ router.get('/all/:key', async (req, res) => {
                         cart[i].product = data;
                         delete cart[i]['product_id'];
                     })
-                    .catch(error => {return res.send({ status: "fail",  message: error })})
+                    .catch(error => { return res.send({ status: "fail", message: error }) })
                     .finally(() => {
                         total = total + (cart[i].qty * ((cart[i].product.product_price * (100 - cart[i].product.product_sale) / 100)));
                         if (i == req.cookies.cart.length - 1) {
                             cart.price = total;
-                            let data = {
-                                cart: cart,
-                                sub_price: total,
-                                ship: 20000,
-                                total_price: total + 20000,
-                            }
-                            res.cookie('cart_price', total, { secure: true, sameSite: 'none' });
-                            return res.send({ status: "success", data: data, message: 'tất cả thông tin sản phẩm' });
+                            axios.get(process.env.ADMIN_URL + `/api/ship/get/` + req.params.key)
+                                .then(response => {
+                                    const ship_price = response.data.data.ship_price;
+                                    let data = {
+                                        cart: cart,
+                                        sub_price: total,
+                                        ship: ship_price,
+                                        total_price: total + ship_price,
+                                    }
+                                    res.cookie('cart_price', total, { secure: true, sameSite: 'none' });
+                                    return res.send({ status: "success", data: data, message: 'tất cả thông tin sản phẩm' });
+                                })
                         }
                     });
             }
@@ -109,7 +113,7 @@ router.get('/update/:product_id/:qty/:key', async (req, res) => {
                             cart[i].product = data;
                             delete cart[i]['product_id'];
                         })
-                        .catch(error => {return res.send({ status: "fail",  message: error })})
+                        .catch(error => { return res.send({ status: "fail", message: error }) })
                         .finally(() => {
                             total = total + (cart[i].qty * ((cart[i].product.product_price * (100 - cart[i].product.product_sale) / 100)));
 

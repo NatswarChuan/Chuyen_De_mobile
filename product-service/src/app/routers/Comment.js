@@ -35,7 +35,7 @@ router.get('/all/:product_id/:key', async (req, res) => {
                                 user_list.push(
                                     axios.get(process.env.IMG_URL + `/api/image/get/` + results[i].user.user_avatar + `/` + req.params.key)
                                         .then(res => {
-                                            const { data } = res.data;  
+                                            const { data } = res.data;
                                             let user = results[i].user;
                                             user.user_avatar = data;
                                             delete results[i]["user_id"];
@@ -45,8 +45,8 @@ router.get('/all/:product_id/:key', async (req, res) => {
                                 )
                             }
 
-                             Promise.all([...user_list]).then(() => {
-                                results.sort((a, b) => a.comment_id !== b.comment_id ? a.comment_id < b.comment_id ? -1 : 1 : 0)
+                            Promise.all([...user_list]).then(() => {
+                                results.sort((a, b) => a.comment_id !== b.comment_id ? a.comment_id < b.comment_id ? 1 : -1 : 0)
                                 return res.send({ status: "success", data: results, message: 'comment của sản phẩm có id=' + id });
                             })
 

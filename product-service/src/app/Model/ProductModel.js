@@ -63,12 +63,9 @@ function getProductInfo(product, res) {
         const getAvatar = axios.get(process.env.IMG_URL + `/api/image/get/` + product.product_avatar + `/` + process.env.KEY)
             .then(res => {
                 const { data } = res.data;
-                axios.get(process.env.IMG_URL + `/api/image/get/` + product.product_avatar + `/` + process.env.KEY)
                 product.product_avatar = data;
-
             })
             .catch(error => {
-                console.log(erro, 42, "Model")
                 return res.send({ status: "fail", message: error });
             });
 
@@ -82,7 +79,6 @@ function getProductInfo(product, res) {
                     product.product_image_id.push(item)
                 })
                 .catch(error => {
-                    console.log(error, 55, "Model")
                     return res.send({ status: "fail", message: error });
                 })
             )

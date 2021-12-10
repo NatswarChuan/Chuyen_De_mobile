@@ -49,9 +49,10 @@ router.get('/get/:product_id/:option/:key', async (req, res) => {
 /**
  * lấy nhiều sản phẩm theo option
  */
-router.get('/all/:option/:key', async (req, res) => {
+router.get('/all/:page/:option/:key', async (req, res) => {
     let key = req.params.key;
     let option = req.params.option;
+    let page = 10 * req.params.page;
     if (key == process.env.KEY) {
         let sort = '';
         if (req.query.sort) {
@@ -75,16 +76,16 @@ router.get('/all/:option/:key', async (req, res) => {
         let sql = '';
         switch (option) {
             case '0':
-                sql = 'SELECT `product`.*FROM `product`WHERE status = 1 ' + filter + ' ORDER BY ' + sort + ' `product_date` DESC,`product`.`product_id` ASC';
+                sql = 'SELECT `product`.*FROM `product`WHERE status = 1 ' + filter + ' ORDER BY ' + sort + ' `product_date` DESC,`product`.`product_id` ASC LIMIT 0,?';
                 break;
             case '1':
-                sql = 'SELECT `product`.*FROM `product` WHERE 1 ' + filter + ' ORDER BY ' + sort + ' `product_date` DESC,`product`.`product_id` ASC';
+                sql = 'SELECT `product`.*FROM `product` WHERE 1 ' + filter + ' ORDER BY ' + sort + ' `product_date` DESC,`product`.`product_id` ASC LIMIT 0,?';
                 break;
             default:
                 return res.send({ status: "fail", message: 'key không hợp lệ' });
         }
 
-        dbConn.query(sql, function (error, results, fields) {
+        dbConn.query(sql, page, function (error, results, fields) {
             if (error) return res.send({ status: "fail", message: error });
             if (results == null || results.length === 0) {
                 return res.send({ status: "fail", message: 'không có sản phẩm trong cơ sở dữ liệu' });
@@ -608,7 +609,7 @@ router.get('/update_status/:status/:shop_id/:key', async (req, res) => {
     if (key == process.env.KEY) {
         dbConn.query('UPDATE `product` SET `status`= ? WHERE `shop_id` = ?', [status, shop_id], function (error, results, fields) {
             if (error) return res.send({ status: "fail", message: error });
-            return res.send({ status: "success", message: results });
+            return res.send({ status: "success",data: Date.now() , message: results });
         });
     }
     else {
@@ -619,14 +620,35 @@ router.get('/update_status/:status/:shop_id/:key', async (req, res) => {
 /**
  * cập nhật trạng thái sản phẩm theo product id
  */
-router.get('/status_id/:status/:product_id/:key', async (req, res) => {
+router.get('/status_id/:status/:product_id/:shop_id/:page/:key', async (req, res) => {
     let key = req.params.key;
     let product_id = req.params.product_id;
+    let shop_id = req.params.shop_id;
     let status = req.params.status;
+    let page = 10 * req.params.page +1;
     if (key == process.env.KEY) {
         dbConn.query('UPDATE `product` SET `status`= ? WHERE `product_id` = ?', [status, product_id], function (error, results, fields) {
             if (error) return res.send({ status: "fail", message: error });
-            return res.send({ status: "success", message: "Cập nhật thành công" });
+            dbConn.query('SELECT `product`.*FROM `product` WHERE `shop_id` = ?  ORDER BY  `product_date` DESC,`product`.`product_id` ASC LIMIT 0,?', [shop_id, page], function (error, results, fields) {
+                if (error) return res.send({ status: "fail", message: error });
+                if (results == null || results.length === 0) {
+                    return res.send({ status: "fail", message: 'không có sản phẩm trong cơ sở dữ liệu' });
+                }
+                else {
+                    (
+                        async () => {
+                            let a = productModel.getProducts(results, res);
+                            a.then(() => {
+                                let isload = results.length < page;
+                                if (!isload) {
+                                    results.splice(results.length - 1, 1);
+                                }
+                                return res.send({ status: "success", data: results, isload: !isload, message: 'sản phẩm shop id=' + shop_id });
+                            })
+                        }
+                    )()
+                }
+            });
         });
     }
     else {

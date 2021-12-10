@@ -41,4 +41,20 @@ router.get('/update/:key', async (req, res) => {
     }
 });
 
+/**
+ * lấy luot truy cap app
+ */
+ router.get('/get/:key', async (req, res) => {
+    let key = req.params.key;
+    if (key == process.env.KEY) {
+        dbConn.query('SELECT * FROM `access` ORDER BY `year` DESC, `month` DESC', function (error, results, fields) {
+            if (error) return res.send({ status: "fail", message: error });
+            return res.send({ status: "success", data: results, message: 'cập nhật thành công' });
+        });
+    }
+    else {
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
+    }
+});
+
 module.exports = router;

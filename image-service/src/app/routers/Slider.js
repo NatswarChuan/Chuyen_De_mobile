@@ -122,4 +122,40 @@ router.post('/remove/:key', async (req, res) => {
     }
 });
 
+/**
+ * Trả về hình ảnh của slide
+ */
+
+ router.get('/get/:slider_id/:key', async (req, res) => {
+    let key = req.params.key;
+    let slider_id = req.params.slider_id;
+    if (key == process.env.KEY) {
+        dbConn.query('SELECT * FROM `slider` WHERE `slider`.`slider_id` = ?',slider_id, function (error, results, fields) {
+            if (error) return res.send({ status: "fail", message: error });
+            if (results == null || results.length === 0) {
+                return res.send({ status: "fail", message: 'không có sản phẩm trong cơ sở dữ liệu' });
+            }
+            else {
+                    results[0].slider_image_id = results[0].slider_image;
+                    const promise = new Promise((resolve, reject) => {
+                        dbConn.query('SELECT * FROM `image` WHERE `image_id` = ?', results[0].slider_image, function (error, result, fields) {
+                            if (error) return res.send({ status: "fail", message: error });
+                            if (result.length > 0) {
+                                let img = process.env.BASE_SERVER + '/api/image/photo/' + result[0].image_id + '/' + process.env.KEY;
+                                results[0].slider_image = img;
+                            }
+                            resolve();
+                        })
+                    });
+                Promise.all([promise]).then(() => {
+                    return res.send({ status: "success", data: results[0], message: 'hình ảnh trong silder' });
+                })
+            }
+        });
+    }
+    else {
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
+    }
+});
+
 module.exports = router;

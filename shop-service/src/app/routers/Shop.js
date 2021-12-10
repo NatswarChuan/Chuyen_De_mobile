@@ -213,10 +213,11 @@ router.get('/update_revenue/:shop_id/:price/:key', async (req, res) => {
 /**
  * Lấy danh sách shop
  */
-router.get('/all/:key', async (req, res) => {
+router.get('/all/:page/:key', async (req, res) => {
     let key = req.params.key;
+    let page = 10 * req.params.page;
     if (key == process.env.KEY) {
-        dbConn.query('SELECT * FROM `shop`', function (error, results, fields) {
+        dbConn.query('SELECT * FROM `shop` LIMIT 0,?', page, function (error, results, fields) {
             if (error) return res.send({ status: "fail", message: error });
             let arr = [];
             for (let i = 0; i < results.length; i++) {
@@ -238,16 +239,29 @@ router.get('/all/:key', async (req, res) => {
 /**
  * Cập nhật trạng thái shop
  */
-router.get('/status/:status/:shop_id/:key', async (req, res) => {
+router.get('/status/:page/:status/:shop_id/:key', async (req, res) => {
     let key = req.params.key;
     let status = req.params.status;
     let shop_id = req.params.shop_id;
+    let page = 10 * req.params.page;
     if (key == process.env.KEY) {
         dbConn.query('UPDATE `shop` SET `status`= ? WHERE `shop_id` = ?', [status, shop_id], function (error, results, fields) {
             if (error) return res.send({ status: "fail", message: error });
             if (results.affectedRows) {
                 axios.get(`${process.env.PRODUCT_URL}/api/product/update_status/${status}/${shop_id}/${process.env.key}`).then((response) => {
-                    return res.send({ status: "success", message: `cập nhật trạng thái shop ${shop_id} thành ${status}` });
+                    dbConn.query('SELECT * FROM `shop` LIMIT 0,?', page, function (error, results, fields) {
+                        if (error) return res.send({ status: "fail", message: error });
+                        let arr = [];
+                        for (let i = 0; i < results.length; i++) {
+                            arr.push(axios.get(`${process.env.IMG_URL}/api/image/get/${results[i].shop_avatar}/${process.env.key}`).then((res) => {
+                                results[i].shop_avatar = res.data.data;
+                            }))
+                        }
+            
+                        Promise.all([...arr]).then(() => {
+                            return res.send({ status: "success", data: results, message: "danh sách shop" })
+                        })
+                    });
                 })
             } else {
                 return res.send({ status: "fail", message: results });

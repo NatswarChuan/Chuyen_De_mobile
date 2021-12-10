@@ -9,7 +9,6 @@ const { response } = require('express');
  *  lấy danh sách danh mục 
  */
 router.get('/all/:option/:key', async (req, res) => {
-    let id = req.params.product_id;
     let key = req.params.key;
     let option = req.params.option;
     if (key == process.env.KEY) {
@@ -24,7 +23,7 @@ router.get('/all/:option/:key', async (req, res) => {
             default:
                 return res.send({ status: "fail", message: 'key không hợp lệ' });
         }
-        dbConn.query(sql, id, function (error, results, fields) {
+        dbConn.query(sql, function (error, results, fields) {
             if (error) return res.send({ status: "fail", message: `error ${error}` });
 
             if (results == null || results.length === 0) {
@@ -55,7 +54,7 @@ router.get('/all/:option/:key', async (req, res) => {
                             }
 
                             for (let i = 0; i < results.length; i++) {
-                                if (results[i].categories.length == 0) {
+                                if (results[i]["category_category"]) {
                                     results.splice(i, 1);
                                     i--;
                                 }
@@ -166,7 +165,7 @@ router.get('/page/:page/:category_id/:option/:key', async (req, res) => {
         let sql = '';
         switch (option) {
             case '0':
-                sql = 'SELECT `product`.* FROM `category` JOIN `category_product` ON `category_product`.`category_id` = `category`.`category_id` JOIN `product` ON `product`.`product_id` = `category_product`.`product_id` WHERE `category`.`category_id` = ? AND `category`.`status` = 1 ' + filter + ' ORDER BY ' + sort + ' `product`.`product_date` DESC LIMIT 0,?';
+                sql = 'SELECT `product`.* FROM `category` JOIN `category_product` ON `category_product`.`category_id` = `category`.`category_id` JOIN `product` ON `product`.`product_id` = `category_product`.`product_id` WHERE `category`.`category_id` = ? AND `product`.`status` = 1 ' + filter + ' ORDER BY ' + sort + ' `product`.`product_date` DESC LIMIT 0,?';
                 break;
             case '1':
                 sql = 'SELECT `product`.* FROM `category` JOIN `category_product` ON `category_product`.`category_id` = `category`.`category_id` JOIN `product` ON `product`.`product_id` = `category_product`.`product_id` WHERE `category`.`category_id` = ? ' + filter + ' ORDER BY ' + sort + ' `product`.`product_date` DESC LIMIT 0,?';
@@ -291,7 +290,7 @@ router.post('/update/:key', async (req, res) => {
     const category_category = req.body.category_category ? req.body.category_category : null;
     let key = req.params.key;
     if (key == process.env.KEY) {
-        let sql = 'UPDATE `category` SET`category_image`=[value-2],`category_name`= ? ,`category_category`= ? , `last_update`= `last_update` + 1 WHERE  `category_id`= ? AND `last_update` = ?';
+        let sql = 'UPDATE `category` SET`category_image`= ?,`category_name`= ? ,`category_category`= ? , `last_update`= `last_update` + 1 WHERE  `category_id`= ? AND `last_update` = ?';
         dbConn.query(sql, [category_image, category_name, category_category, category_id, last_update], function (error, results, fields) {
             if (error) { return res.send({ status: "fail", message: error }); }
             (
@@ -302,6 +301,56 @@ router.post('/update/:key', async (req, res) => {
                 }
             )()
         });
+    }
+    else {
+        return res.send({ status: "fail", message: 'key không hợp lệ' });
+    }
+}
+);
+
+/**
+ *  lấy danh danh mục 
+ */
+ router.get('/get_cat/:category_id/:key', async (req, res) => {
+    let id = req.params.category_id;
+    let key = req.params.key;
+    if (key == process.env.KEY) {
+        dbConn.query('SELECT * FROM `category` WHERE `category`.`category_id` = ? OR `category`.`category_category` = ? ORDER BY `category`.`category_id` ASC', [id,id], function (error, results, fields) {
+            if (error) return res.send({ status: "fail", message: `error ${error}` });
+
+            if (results == null || results.length === 0) {
+                return res.send({ status: "fail", message: 'không có sản phẩm có id=' + id });
+            }
+            else {
+                let categories = [];
+
+                (
+                    async () => {
+                        for (let i = 0; i < results.length; i++) {
+                            categories.push(axios.get(process.env.IMG_URL + `/api/image/get/` + results[i].category_image + `/` + req.params.key)
+                                .then(response => {
+                                    const { data } = response.data;
+                                    results[i].category_image_id = results[i].category_image;
+                                    results[i].category_image = data;
+                                }).catch(err => { return }))
+                        }
+
+                        await Promise.all([...categories]).then(() => {
+                            for (let i = 0; i < results.length; i++) {
+                                results[i].categories = [];
+                                for (let j = 0; j < results.length; j++) {
+                                    if (results[i].category_id == results[j].category_category) {
+                                        results[i].categories.push(results[j]);
+                                    }
+                                }
+                            }
+                            return res.send({ status: "success", data: results[0] });
+                        })
+                    }
+                )()
+            }
+        });
+
     }
     else {
         return res.send({ status: "fail", message: 'key không hợp lệ' });

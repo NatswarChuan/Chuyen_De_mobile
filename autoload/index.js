@@ -12,6 +12,7 @@ const cookieParser = require('cookie-parser')
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
 const privateKey = fs.readFileSync('./certificate/private.key');
 const certificate = fs.readFileSync('./certificate/certificate.crt');
 const ca = fs.readFileSync('./certificate/ca_bundle.crt');
@@ -41,7 +42,7 @@ app.set('trust proxy', true);
 app.use(cors(
     {
         allowedHeaders: ['Content-Type', 'Authorization'],
-        origin: ['https://localhost:3000','http://localhost:3000','http://103.207.38.200:3102','https://103.207.38.200:443'],
+        origin: ['https://localhost:3000','http://localhost:3000','http://103.207.38.200:3102','https://103.207.38.200:443',"https://cansashop.xyz","https://cansashop.xyz:444","https://cansashop.xyz:446"],
         credentials: true,
         exposedHeaders: ["set-cookie"],
     }
@@ -50,7 +51,7 @@ app.use(cors(
 app.use(function (req, res, next) {
     req.headers['X-Forwarded-Proto'] = 'https';
     res.header('Content-Type', 'application/json;charset=UTF-8')
-    res.header('Access-Control-Allow-Origin', "https://localhost:3000");
+    res.header('Access-Control-Allow-Origin', "https://localhost:3000","https://cansashop.xyz","https://cansashop.xyz:444","https://cansashop.xyz:446");
     //res.header('Access-Control-Allow-Credentials', true)
     res.header(
         'Access-Control-Allow-Headers',
@@ -60,7 +61,6 @@ app.use(function (req, res, next) {
 })
 // TODO: Update this list with your proxies or virtual machines.
 const proxies = [
-    // httpProxy('52.187.10.119:3301'),
     httpProxy('127.0.0.1:3301')
 ];
 

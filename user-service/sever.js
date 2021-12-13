@@ -64,21 +64,24 @@ var con = mysql.createConnection({
 
 const crypto = require('crypto');
 const { compact } = require('lodash');
+const { default: axios } = require('axios');
 const algorithm = 'aes-256-cbc';
 const key = crypto.randomBytes(32);
 const iv = crypto.randomBytes(16);
+const PasswordHash = "hoanganh11k";
 
-
+// create a sha-256 hasher
+let sha256Hasher = crypto.createHmac("sha256", PasswordHash);
 
 
 con.connect(function (err) {
     if (err) throw err;
     setInterval(() => {
         con.query('SELECT version()', function (error, results, fields) {
-            console.log("Database Check...")
+            console.log("User Database Check...")
         })
     }, 300000)
-    console.log("Database Connected Success!!!")
+    console.log("User Database Connected Success!!!")
 });
 
 server.listen(port, () => {
@@ -106,7 +109,8 @@ app.get('/', (req, res, next) => {
 app.get('/api/user/create/:user_permission/:user_name/:user_password/:user_email/:key', (req, res, next) => {
     var user_permission = req.params.user_permission;
     var email = req.params.user_email;
-    var password = req.params.user_password;
+    sha256Hasher = crypto.createHmac("sha256", PasswordHash);
+    var password = sha256Hasher.update(req.params.user_password).digest("hex");
     var user_name = req.params.user_name
     if (req.params.key == APIs_KEY) {
         check_email_exits(email, function (err, data) {
@@ -175,9 +179,10 @@ app.get('/api/user/create/:user_permission/:user_name/:user_password/:user_email
 app.post('/api/user/login/:key', function (request, response) {
     console.log(request.body.password)
     var email = request.body.email;
-    var password = request.body.password;
+    sha256Hasher = crypto.createHmac("sha256", PasswordHash);
+    var password = sha256Hasher.update(request.body.password).digest("hex");
     if (email != null && password != null) {
-        con.query('SELECT `user_id`, `information_email`, `information_password`, `last_update` FROM `information` WHERE information_email = ? AND information_password = ?', [email, password], function (error, results, fields) {
+        con.query('SELECT `information`.`user_id`, `information`.`information_email`, `information`.`information_password`, `information`.`last_update` FROM `information` JOIN `user` ON `user`.`user_id` = `information`.`user_id` WHERE information.information_email = ? AND information.information_password = ? AND user.status = 1', [email, password], function (error, results, fields) {
             if (results.length > 0) {
                 var id;
                 Object.keys(results).forEach(function (key) {
@@ -204,12 +209,12 @@ app.post('/api/user/login/:key', function (request, response) {
 //lấy thông tin tài khoản khi đã xác thực
 app.get('/api/user/loginUser', function (request, response) {
     if (request.session.loggedin) {
-        var data = { 'user_id': request.session.user_id, 'email': decrypt(request.session.email) };
-        response.send(data_json_endcode(data, 'Đăng nhập thành công!!'));
+        con.query('SELECT * FROM `user_permission` WHERE `user_id` = ?  AND (permission_id = 4 OR permission_id = 3)  ORDER BY `user_permission`.`permission_id` ASC', [request.session.user_id], function (error, results, fields) {
+            response.send(data_json_endcode(results[0], 'Lay Thanh Cong!!!'))
+        });
     } else {
         response.send(error_Print('faild', 'Vui lòng đăng ký hoặc đăng nhập!'));
     }
-    response.end();
 });
 
 //Hàm đăng xuất
@@ -267,27 +272,20 @@ app.get('/api/user/check/login', function (request, response) {
 app.get('/api/user/get/user', function (request, response) {
     if (request.session.loggedin) {
         var id = request.session.user_id;
-        var data;
-        var user_key;
-        var user_name;
-        var user_avatar;
-        var user_status;
-        var user_last_update;
-        con.query('SELECT `user`.*,`profile`.`profile_birthday` AS `user_birthday`, `profile`.`profile_phone` AS `user_phone`, `profile`.`profile_name` AS `user_real_name`, `information`.`information_email` AS `user_email` FROM `user` JOIN `profile` ON `profile`.`user_id` = `user`.`user_id` JOIN `information` ON `information`.`user_id` = `user`.`user_id` WHERE `user`.`user_id`= ' + id, function (error, results, fields) {
-            Object.keys(results).forEach(function (key) {
-                var row = results[key];
-                user_key = row.user_key;
-                user_name = row.user_name;
-                user_avatar = row.user_avatar;
-                user_status = row.status;
-                user_phone = row.user_phone;
-                user_email = row.user_email;
-                user_last_update = row.last_update;
-                user_real_name = row.user_real_name;
-                user_birthday = row.user_birthday;
-            });
-            data = { 'user_birthday': user_birthday, 'user_id': id, 'user_key': user_key, 'user_name': user_name, 'user_avatar': user_avatar, 'user_status': user_status, 'user_last_update': user_last_update, 'user_phone': user_phone, 'user_email': user_email, 'user_real_name': user_real_name }
-            response.send(data_json_endcode(data, 'Lấy thành công!!'));
+        con.query('SELECT `user`.*,`profile`.`profile_birthday` AS `user_birthday`, `profile`.`profile_phone` AS `user_phone`, `profile`.`profile_name` AS `user_real_name`, `information`.`information_email` AS `user_email`, `user_permission`.`permission_id` AS `user_permission` FROM `user` JOIN `profile` ON `profile`.`user_id` = `user`.`user_id` JOIN `information` ON `information`.`user_id` = `user`.`user_id` JOIN `user_permission` ON `user`.`user_id` = `user_permission`.`user_id` WHERE (`user_permission`.`permission_id` = 4 OR `user_permission`.`permission_id` = 3 OR `user_permission`.`permission_id` = 1) AND `user`.`user_id`= ? ORDER BY `user_permission`.`permission_id` ASC', [id], function (error, results, fields) {
+            console.log(results[0])
+            if(results[0]!==undefined){
+            axios.get(`http://127.0.0.1:3002/api/image/get/` + results[0].user_avatar + `/` + APIs_KEY)
+                .then(res => {
+                    const { data } = res.data;
+                    results[0].user_avatar_image = data;
+                    response.send(data_json_endcode(results[0], 'Lấy thành công!!'));
+                })
+            }else{
+                var data = {};
+                data.user_avatar_image = undefined;
+                response.send(data_json_endcode(data, 'Lấy thành công!!'));
+            }
         })
     } else {
         response.send(data_json_endcode(false, 'Chưa đăng nhập!!'));
@@ -297,13 +295,14 @@ app.get('/api/user/get/user', function (request, response) {
 //Hàm lấy thông tin user theo id
 app.get('/api/user/get/user/by/:id', function (request, response) {
     var id = request.params.id;
-    var data;
+    var _data;
     var user_key;
     var user_name;
     var user_avatar;
     var user_status;
     var user_last_update;
-    con.query('SELECT * FROM `user` WHERE user_id = ' + id, function (error, results, fields) {
+    var user_full_name;
+    con.query('SELECT * FROM `user` JOIN `profile` ON `user`.`user_id` = `profile`.`user_id` WHERE `profile`.`user_id` =  ' + id, function (error, results, fields) {
         Object.keys(results).forEach(function (key) {
             var row = results[key];
             user_key = row.user_key;
@@ -311,9 +310,16 @@ app.get('/api/user/get/user/by/:id', function (request, response) {
             user_avatar = row.user_avatar;
             user_status = row.status;
             user_last_update = row.last_update
+            user_full_name = row.profile_name;
         });
-        data = { 'user_id': id, 'user_key': user_key, 'user_name': user_name, 'user_avatar': user_avatar, 'user_status': user_status, 'user_last_update': user_last_update }
-        response.send(data_json_endcode(data, 'Lấy thành công!!'));
+        axios.get(`http://127.0.0.1:3002/api/image/get/` + user_avatar + `/` + APIs_KEY)
+            .then(res => {
+                const { data } = res.data;
+                const user_avatar_image = data;
+                _data = { 'user_id': id, 'user_key': user_key, 'user_name': user_name, 'user_avatar': user_avatar_image, 'user_status': user_status, 'user_last_update': user_last_update, 'user_full_name': user_full_name }
+                response.send(data_json_endcode(_data, 'Lấy thành công!!'));
+            })
+
     })
 });
 
@@ -416,7 +422,8 @@ app.get('/api/user/forgot/password/checkPin/:email/:codePin', function (request,
 });
 //Hàm đổi mật khẩu
 app.get('/api/user/forgot/password/center/:email/:password', function (request, response) {
-    var password = request.params.password;
+    sha256Hasher = crypto.createHmac("sha256", PasswordHash);
+    var password = sha256Hasher.update(request.params.password).digest("hex");
     var email = request.params.email;
     con.query('UPDATE `information` SET `information_password`= ? WHERE information_email = ?', [password, email], function (error, results, fields) {
         response.send(data_json_endcode(true, 'Đổi mật khẩu thành công vui lòng đăng nhập!!!'))
@@ -537,6 +544,136 @@ app.post('/api/user/login/facebook/:key', (request, response, next) => {
     }
 
 });
+
+//Hàm Update Status user
+app.get('/api/user/update/status/:id/:status', function (request, response) {
+    let id = request.params.id
+    let status = request.params.status
+    if (request.session.loggedin) {
+        let id_user_login = request.session.user_id
+        con.query('SELECT * FROM `user_permission` WHERE user_id = ? AND (permission_id = 4 OR permission_id = 3)  ORDER BY `user_permission`.`permission_id` ASC ', [id_user_login], function (error, results, fields) {
+            if (results[0].permission_id == 3) {
+                con.query('UPDATE `user` SET `status`= ? WHERE user_id = ?', [status, id], function (error, results, fields) {
+                    response.send(data_json_endcode(true, 'Đổi thành công!!'));
+                })
+            } else {
+                response.send(data_json_endcode(false, 'Bạn Không đủ quyền hạn!!'));
+
+            }
+        })
+
+    } else {
+        response.send(data_json_endcode(false, 'Chưa đăng nhập!!'));
+    }
+});
+
+//Hàm trả về danh sách user
+app.get('/api/user/get/:option/:page/:numPage', function (request, response) {
+    let page = request.params.page
+    let numpage = request.params.numPage
+    let option = request.params.option
+    if (request.session.loggedin) {
+        let id_user_login = request.session.user_id
+        con.query('SELECT * FROM `user_permission` WHERE user_id = ? AND (permission_id = 4 OR permission_id = 3)  ORDER BY `user_permission`.`permission_id` ASC ', [id_user_login], function (error, results, fields) {
+            if (results[0].permission_id == 3) {
+                var query = '';
+                switch (option) {
+                    case 'all':
+                        query = `SELECT * FROM user LIMIT ${page} , ${numpage}`
+                        break;
+                    case 'desc_id':
+                        query = `SELECT * FROM user ORDER BY user_id DESC LIMIT ${page} , ${numpage}`
+                        break;
+                    case 'asc_id':
+                        query = `SELECT * FROM user ORDER BY user_id ASC LIMIT ${page} , ${numpage}`
+                        break;
+                    case 'asc_name':
+                        query = `SELECT * FROM user ORDER BY user.user_name ASC LIMIT ${page} , ${numpage}`
+                        break;
+                    case 'desc_name':
+                        query = `SELECT * FROM user ORDER BY user.user_name DESC LIMIT ${page} , ${numpage}`
+                        break;
+                    default:
+                        break;
+                }
+                if (query != '') {
+                    con.query(query, function (error, results, fields) {
+                        response.send(data_json_endcode(results, 'Lấy thành công!!'));
+                    })
+                } else {
+                    response.send(data_json_endcode(false, 'Option không hợp lệ!!'));
+                }
+            } else {
+                response.send(data_json_endcode(false, 'Bạn Không đủ quyền hạn!!'));
+            }
+        })
+
+    } else {
+        response.send(data_json_endcode(false, 'Chưa đăng nhập!!'));
+    }
+});
+
+//Hàm search user
+app.get('/api/user/update/search/:keyword/:page/:numPage', function (request, response) {
+    let page = request.params.page
+    let numpage = request.params.numPage
+    let keyword = request.params.keyword
+    if (request.session.loggedin) {
+        let id_user_login = request.session.user_id
+        con.query('SELECT * FROM `user_permission` WHERE user_id = ? ', [id_user_login], function (error, results, fields) {
+            if (results[0].permission_id == 3) {
+                con.query(`SELECT * FROM user WHERE user_name LIKE '%${keyword}%' LIMIT ${page} , ${numpage}`, function (error, results, fields) {
+                    response.send(data_json_endcode(results, 'Lấy thành công!!'));
+                })
+            } else {
+                response.send(data_json_endcode(false, 'Bạn Không đủ quyền hạn!!'));
+            }
+        })
+
+    } else {
+        response.send(data_json_endcode(false, 'Chưa đăng nhập!!'));
+    }
+});
+
+//Xác thực login Admin trên hệ thống
+app.post('/api/user/login/admin/:key', function (request, response) {
+    var email = request.body.email;
+    sha256Hasher = crypto.createHmac("sha256", PasswordHash);
+    var password = sha256Hasher.update(request.body.password).digest("hex");
+    if (email != null && password != null) {
+        con.query('SELECT `user_id`, `information_email`, `information_password`, `last_update` FROM `information` WHERE information_email = ? AND information_password = ?', [email, password], function (error, results, fields) {
+            if (results.length > 0) {
+                var id;
+                Object.keys(results).forEach(function (key) {
+                    var row = results[key];
+                    id = row.user_id;
+                });
+                con.query('SELECT * FROM `user_permission` WHERE user_id = ? AND (permission_id = 4 OR permission_id = 3)  ORDER BY `user_permission`.`permission_id` ASC', [id], function (error, results, fields) {
+                    if (results[0] !== undefined) {
+                        if (results[0].permission_id == 3 || results[0].permission_id == 4) {
+                            request.session.loggedin = true;
+                            request.session.user_id = id;
+                            request.session.email = email;
+                            request.session.cookie.maxAge = 365 * 24 * 60 * 60 * 1000;
+                            response.send(data_json_endcode({ permission_id: results[0].permission_id }, 'Đăng nhập thành công!!'));
+                            console.log(request.ip + ' : Login success!!!')
+                        } else {
+                            response.send(data_json_endcode(false, 'Bạn Không đủ quyền hạn!!'));
+                        }
+                    } else {
+                        response.send(data_json_endcode(false, 'Bạn Không đủ quyền hạn!!'));
+                    }
+                })
+            } else {
+                response.send(error_Print('Faild', 'Sai Email Hoặc Mật Khẩu!'));
+            }
+        });
+    } else {
+        response.send(error_Print('Faild', 'Vui lòng nhập Email hoặc Mật Khẩu!'));
+    }
+});
+
+
 
 function check_tocken_exits(tocken, callback) {
     var sql = 'SELECT user_id FROM `information` WHERE api_key = \'' + tocken + '\'';

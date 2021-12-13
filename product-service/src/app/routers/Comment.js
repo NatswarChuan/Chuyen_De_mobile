@@ -12,7 +12,7 @@ router.get('/all/:product_id/:page/:key', async (req, res) => {
     let page = req.params.page * 10;
     if (key == process.env.KEY) {
 
-        dbConn.query('SELECT * FROM `comment` WHERE `product_id` = ? ORDER BY `comment`.`comment_id` DESC LIMIT 0, ?', [id,page], function (error, results, fields) {
+        dbConn.query('SELECT * FROM `comment` WHERE `product_id` = ? ORDER BY `comment`.`comment_id` DESC LIMIT 0, ?', [id, page], function (error, results, fields) {
             if (error) return res.send({ status: "fail", message: `error ${error}` });
             if (results == null || results.length === 0) {
                 return res.send({ status: "fail", message: 'không có bình luận của sản phẩm có id=' + id });
@@ -31,8 +31,8 @@ router.get('/all/:product_id/:page/:key', async (req, res) => {
                                 }))
                         }
                         await Promise.all([...user_comments]).then(() => {
-                                results.sort((a, b) => a.comment_id !== b.comment_id ? a.comment_id < b.comment_id ? 1 : -1 : 0)
-                                return res.send({ status: "success", data: results, message: 'comment của sản phẩm có id=' + id });
+                            results.sort((a, b) => a.comment_id !== b.comment_id ? a.comment_id < b.comment_id ? 1 : -1 : 0)
+                            return res.send({ status: "success", data: results, message: 'comment của sản phẩm có id=' + id });
 
                         })
                     }
@@ -60,7 +60,7 @@ router.post('/insert/:page/:key', async (req, res) => {
         dbConn.query('INSERT INTO `comment`( `user_id`, `comment_rating`, `comment_content`, `product_id`) VALUES (?, ?, ?, ?)',
             [userId, comment_rating, comment_content, product_id], function (error, results, fields) {
                 if (error) return res.send({ status: "fail", message: error });
-                dbConn.query('SELECT * FROM `comment` WHERE `product_id` = ? ORDER BY `comment`.`comment_id` DESC LIMIT 0, ?', [product_id,page], function (error, results, fields) {
+                dbConn.query('SELECT * FROM `comment` WHERE `product_id` = ? ORDER BY `comment`.`comment_id` DESC LIMIT 0, ?', [product_id, page], function (error, results, fields) {
                     if (error) return res.send({ status: "fail", message: `error ${error}` });
                     if (results == null || results.length === 0) {
                         return res.send({ status: "fail", message: 'không có bình luận của sản phẩm có id=' + product_id });
@@ -79,28 +79,8 @@ router.post('/insert/:page/:key', async (req, res) => {
                                         }))
                                 }
                                 await Promise.all([...user_comments]).then(() => {
-                                    (
-                                        async () => {
-                                            let user_list = [];
-                                            for (let i = 0; i < results.length; i++) {
-                                                user_list.push(
-                                                    axios.get(process.env.IMG_URL + `/api/image/get/` + results[i].user.user_avatar + `/` + req.params.key)
-                                                        .then(res => {
-                                                            const { data } = res.data;
-                                                            let user = results[i].user;
-                                                            user.user_avatar = data;
-                                                            delete results[i]["user_id"];
-                                                            results[i].user = user;
-                                                        })
-                                                        .catch(error => { return res.send({ status: "fail", message: `error ${error}` }) })
-                                                )
-                                            }
-
-                                            await Promise.all([...user_list]).then(() => {
-                                                return res.send({ status: "success", data: results, message: 'comment của sản phẩm có id=' + product_id });
-                                            })
-                                        }
-                                    )()
+                                    results.sort((a, b) => a.comment_id !== b.comment_id ? a.comment_id < b.comment_id ? 1 : -1 : 0)
+                                    return res.send({ status: "success", data: results, message: 'comment của sản phẩm có id=' + product_id });
 
                                 })
                             }

@@ -253,7 +253,7 @@ router.get('/all/:user_id/:option/:key', async (req, res) => {
 router.post('/save/:user_id/:key', async (req, res) => {
     let key = req.params.key;
     let id = req.params.user_id;
-    const phone = req.body.address;
+    const phone = req.body.phone;
     const address = req.body.address;
     if (key == process.env.KEY) {
         let oder_id = id + Number(Date.now());
